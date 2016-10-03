@@ -1,0 +1,204 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\begin{document}
+
+\title{Performance Analysis of CNN Frameworks\\for GPUs}
+
+\author{\IEEEauthorblockN{HeeHoon Kim}
+\IEEEauthorblockA{Department of Computer Science and Engineering,\\
+Seoul National University, Korea\\
+Email: hydrogen@snu.ac.kr}
+\and
+\IEEEauthorblockN{Hyoungwook Nam}
+\IEEEauthorblockA{Department of Computer Science and Engineering,\\
+Seoul National University, Korea\\
+Email: hwnam831@snu.ac.kr}}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\IEEEpeerreviewmaketitle
+
+\section{Introduction}
+
+\subsection{Convolutional Neural Network}
+
+\begin{itemize}
+  \item Cite lenet, alexnet
+  \item Recent achievements of CNN(imagenet challenge, ..)
+\end{itemize}
+
+\subsection{Deep learning and gpu}
+
+\begin{itemize}
+\item How gpu made deep learning possible
+\item GPU optimization matters (e.g. cudnn, fft-convolutions, winograd)
+\item GPU performance analysis is important
+\end{itemize}
+
+\subsection{Motivation}
+In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
+We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by number of github stars.
+We compare the difference in performance characteristics of the frameworks.
+Furthermore, we take a close look into GPU kernels to find out reasons for the performance difference and suggest methods to improve performance.
+This study will find out detailed advantages and limits of deep learning frameworks and convolution algorithms.
+Based on the analysis, we provide optimization tips for implementing efficient CNN model using the frameworks.
+Also we analyze performance characteristics of the frameworks on multi-gpu context to suggest efficient implementation method to use multiple gpus.
+
+\section{Related work}
+
+\subsection{Previous work (comparative study, convnet benchmark, cudnn) - no detailed analysis}
+It has been only a few years since deep learning frameworks were introduced to public.
+Few attempts recently tried to benchmark and compare the performance of the frameworks.
+A benchmark of CNN frameworks is publicly available on Github but it has not been updated for more than an year hence it cannot be used to compare current versions of the frameworks \cite{}.
+Detailed benchmark of deep learning frameworks was published by Bahrampour et. al. but it only compares frameworks by execution time.
+Also the benchmark uses older versions of CuDNN which do not support current convolution algorithms such as fft convolution and winograd convolution.
+This study, however, compares newest versions of the frameworks and provide detailed analysis down to GPU kernel level.
+And also we compare them on multi-gpu context which has not been done in previous studies.
+
+\subsection{Compare performance characteristics of machine learning frameworks}
+
+\subsection{Characterize the difference between deep learning libraries}
+
+\subsection{Compare multi-gpu utilization of frameworks}
+
+\subsection{provide detailed pros and cons of frameworks}
+
+\subsection{Provide efficient implementation tips for CNN users}
+
+\section{Background (DNN Frameworks)}
+
+\subsection{Machine learning frameworks}
+
+\subsubsection{Theano, Torch, Caffe, Tensorflow comparison}
+
+\subsection{Convolution algorithms}
+Several methods are used to efficiently implement convolution on GPU.
+Direct convolution is the most straightforward way but needs a lot of specialized kernels to optimize for various input dimensions and corner cases.
+Cuda-convnet \cite{} is the efficient direct convolution library written by Alex Krizhevsky, the author of AlexNet paper.
+CuDNN however, treats convolution as matrix multiplication \cite{}.
+The convolution layer of K kernels with dimension R*R and W*W input with C channels is converted to multiplication of K*CRR filter matrix and CRR*NWW data matrix.
+The dimensions of matrices are very big, hence the multiplication can be parallelized using highly efficient BLAS libraries.
+Converting convolution to matrix might require significant amount of memory bandwidth.
+CuDNN computes the multiplication by tiles to hide memory latency while computing \cite{}.
+This method scales well on small batch sizes and can be used on all types of convolution layers.
+The complexity of both methods are basically the same.
+
+FFT convolution uses fast Fourier transform algorithm to reduce algorithm complexity \cite{}.
+FFT significantly reduces the amount of workload but requires much more memory space since filters must be padded to the dimension of inputs.
+CuDNN supports FFT convolution and tiled FFT convolution.
+Tiled FFT convolution requires additional computation for tiling but can be used when the memory space is not enough for normal FFT convolution.
+However, FFT convolution cannot be applied to convolution with stride more than 1.
+Winograd convolution algorithm is based on convolution as matrix multiplication.
+Winograd’s minimal filtering algorithm follows the idea of Strassen’s algorithm.
+For example, minimal Winograd filter of 2x3 tiling reduces number of matrix multiplication from 6 to 4 \cite{}.
+However, different sized kernel needs its own minimal filtering algorithm.
+Hence CuDNN 5.0 only supports Winograd convolution for filter size of 3x3 \cite{}.
+
+\subsection{Multi-gpu parallelism}
+Distributed implementation of deep neural networks can be implemented by data parallelism or model parallelism \cite{}.
+On data parallelism, a batch of inputs is divided and distributed among devices.
+After backpropagation, the entire gradients of network parameters must be passed to single device in order to compute stochastic gradient descent.
+And then the updated parameters are distributed among devices.
+Hence, the communication cost of data parallelism depends on number of parameters in the network.
+AlexNet has 65M parameters, thus each iteration needs to transfer 520MB of data per GPU.
+On the other hand, model parallelism divides and distributes the network.
+Carefully designed model parallelism of convolution layer outperforms the data parallelism \cite{}.
+However, model parallelism cannot be implemented on Caffe.
+Thus we only test data parallelism approaches of frameworks.
+Tensorflow and Torch supports both data and model parallelism while Theano doesn’t support multi-gpu yet.
+
+\section{Experiment setup}
+
+\subsection{test environment}
+We test the frameworks on the CentOS 7.2 server with 4 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
+We use Cuda 7.5 and CuDNN R5 which is the latest stable release of CuDNN.
+The versions of the frameworks fully support CuDNN R5.
+Only torch supports the latest version of Cuda-convnet3.
+The detailed system environments are represented on Table \ref{} and \ref{}.
+
+CentOS 7.2.1511 / Linux 3.10.0-327 / Inte Xeon E5-2650@2.0GHz / 128GB DDR3@1600MHz / CuDNN 5005 / Cuda 7.5 / Torch 7 ccn2.torch, cudnn.torch R5 / Theano 0.8.2 / Caffe * / Tensorflow *
+
+\subsection{Network model and input}
+AlexNet \cite{} is one of the earliest successful deep neural networks on image recognition task using ImageNet dataset \cite{}.
+AlexNet uses 5 convolution layers to extract features and 3 fully connected layers for classification.
+Each layer has rectified linear unit(ReLU) layer for nonlinear activation.
+AlexNet has been frequently used for benchmarking performance of machine learning libraries, because it utilizes most of the current DNN components such as convolution, max-pooling and dropout \cite{}.
+The original AlexNet model includes Local response normalization(LRN) layer, but we exclude it for benchmarking task since LRN is very rarely used in current convolutional neural networks.
+The detailed layer structure of AlexNet model on this study is presented in Table \ref{} and Fig \ref{}.
+
+\begin{itemize}
+  \item output dimension, number of operation, activation in each layer
+  \item dataset : ILSVRC 2012
+\end{itemize}
+
+\section{Results/Analysis}
+
+\subsection{Single GPU analysis}
+
+\begin{itemize}
+  \item batch : 32, 64, 128
+  \item Total running times, Achieved accuracy (default option, optimized option (specify convolution algorithm))
+  \item FileIO, CPU, GPU, For/Backward, Layerwise (time / flops / memory)
+  \item Framework overhead
+\end{itemize}
+
+\subsection{characterization of different convolution algorithms (kernels)}
+Since forward and backward propagation of convolution layers takes most of the running time, we run the same model on different convolution kernel to characterize the performance of each convolution algorithm.
+Three types of convolutions are computed for each iteration.
+forward convolution(FWD) computes the layer output, backward data convolution(BD) computes backward gradient input and backward filter convolution(BW) computes gradients of network parameters.
+CuDNN R5 supports matrix multiplication convolution(gemm), FFT convolution, and winograd convolution.
+Winograd convolution cannot be applied to BW convolution yet hence we use fft convolution instead.
+Since the first convolution layer has stride of 4, Winograd and FFT convolution cannot be applied.
+Direct convolution is tested by Torch binding of Cuda-convnet3.
+All comparisons are done on Torch 7 because Torch can specify convolution algorithm on each layer and newest version of Cuda-convnet3 is only supported by Torch7.
+
+Randomly generated batch inputs are used to remove IO latency.
+The compute times and statistics of kernels are measured by NVIDIA nvprof profiler.
+The theoretical floating point operation counts are calculated as 2 * K*CRR*NWW since each calculation uses 1 addition and 1 multiplication.
+We compare them to actual floating-point operation counts of the kernels.
+Flops of the kernels are calculated as Flop count/execution time.
+FFT convolution consists of 2 FFTs and 1 complex matrix multiplication, thus statistics of those 3 kernels are added together.
+
+\begin{itemize}
+  \item theoretical flops, real flops
+  \item memory footprint, compute utilization (Memory transactions, Control-instructions, IPC, Memory usage)
+  \item difference between algorithms
+\end{itemize}
+
+\subsection{Multi GPU analysis}
+
+\begin{itemize}
+  \item Support
+  \item Scalability : proportion of data exchange
+  \item Synchronization cost
+\end{itemize}
+
+\section{Discussion / Conclusion}
+
+\begin{itemize}
+  \item Summary of results
+  \item Compare frameworks : Implementation difference
+  \item Locate bottleneck / suggest possible optimization
+  \item Limitation, future research
+\end{itemize}
+
+\section*{Acknowledgment}
+
+The authors would like to thank...
+
+\begin{thebibliography}{1}
+
+\bibitem{IEEEhowto:kopka}
+H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+\end{thebibliography}
+
+\end{document}
