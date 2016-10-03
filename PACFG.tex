@@ -1,7 +1,8 @@
 \documentclass[conference]{IEEEtran}
 
 \usepackage{cite}
-
+\usepackage{graphicx}
+\usepackage{tabularx, booktabs}
 \hyphenation{op-tical net-works semi-conduc-tor}
 
 \begin{document}
@@ -21,6 +22,11 @@ Email: hwnam831@snu.ac.kr}}
 \maketitle
 
 \begin{abstract}
+Convolutional neural network have been successful in visual recognition tasks.
+Machine learning frameworks are using GPU deep learning libraries to efficiently implement CNNs on GPUs.
+This study analyzes GPU performance characteristics of Theano, Caffe, Torch and Tensorflow via benchmarking AlexNet model on them.
+We also identify differences between 4 convolution algorithm kernels.
+
 \end{abstract}
 
 \IEEEpeerreviewmaketitle
@@ -55,12 +61,6 @@ Convolution with CuDNN results in up to 4x performance improvement from default 
 Efficiency of deep learning on single GPU has been improved a lot, however deep learning on multiple GPU still shows poor scalability.
 \cite{} %% model parallelism, distributed deep learning
 
-\begin{itemize}
-\item How gpu made deep learning possible
-\item GPU optimization matters (e.g. cudnn, fft-convolutions, winograd)
-\item GPU performance analysis is important
-\end{itemize}
-
 \subsection{Motivation}
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
 We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
@@ -82,15 +82,6 @@ Also the benchmark uses older versions of CuDNN which do not support current con
 This study, however, compares newest versions of the frameworks and provide detailed analysis down to GPU kernel level.
 And also we compare them on multi-gpu context which has not been done in previous studies.
 
-\subsection{Compare performance characteristics of machine learning frameworks}
-
-\subsection{Characterize the difference between deep learning libraries}
-
-\subsection{Compare multi-gpu utilization of frameworks}
-
-\subsection{provide detailed pros and cons of frameworks}
-
-\subsection{Provide efficient implementation tips for CNN users}
 
 \section{Background (DNN Frameworks)}
 
@@ -112,27 +103,23 @@ The complexity of both methods are basically the same.
 
 FFT convolution uses fast Fourier transform algorithm to reduce algorithm complexity \cite{}.
 FFT significantly reduces the amount of workload but requires much more memory space since filters must be padded to the dimension of inputs.
-CuDNN supports FFT convolution and tiled FFT convolution.
-Tiled FFT convolution requires additional computation for tiling but can be used when the memory space is not enough for normal FFT convolution.
 However, FFT convolution cannot be applied to convolution with stride more than 1.
-Winograd convolution algorithm is based on convolution as matrix multiplication.
+Winograd convolution algorithm is based on convolution as matrix multiplication but reduces algorithm complexity using Winograd's minimal filtering algorithm.
 Winograd’s minimal filtering algorithm follows the idea of Strassen’s algorithm.
 For example, minimal Winograd filter of 2x3 tiling reduces number of matrix multiplication from 6 to 4 \cite{}.
-However, different sized kernel needs its own minimal filtering algorithm.
-Hence CuDNN 5.0 only supports Winograd convolution for filter size of 3x3 \cite{}.
+However, different sized kernel needs its own minimal filtering algorithm, hence CuDNN 5.0 only supports Winograd convolution for filter size of 3x3 \cite{}.
 
 \subsection{Multi-gpu parallelism}
-Distributed implementation of deep neural networks can be implemented by data parallelism or model parallelism \cite{}.
+Multi-gpu implementation of deep neural networks can be implemented by data parallelism or model parallelism \cite{}.
 On data parallelism, a batch of inputs is divided and distributed among devices.
 After backpropagation, the entire gradients of network parameters must be passed to single device in order to compute stochastic gradient descent.
 And then the updated parameters are distributed among devices.
 Hence, the communication cost of data parallelism depends on number of parameters in the network.
-AlexNet has 65M parameters, thus each iteration needs to transfer 520MB of data per GPU.
+AlexNet has 65M parameters, thus each iteration needs to transfer approximately 520MB of data per GPU.
 On the other hand, model parallelism divides and distributes the network.
 Carefully designed model parallelism of convolution layer outperforms the data parallelism \cite{}.
-However, model parallelism cannot be implemented on Caffe.
-Thus we only test data parallelism approaches of frameworks.
-Tensorflow and Torch supports both data and model parallelism while Theano doesn’t support multi-gpu yet.
+However, multi-gpu support on Caffe is limited to data parallelism, therefore we only compare data parallelism efficiencies of the frameworks.
+Tensorflow and Torch supports both data and model parallelism while Theano doesn’t support multi-gpu natively.
 
 \section{Experiment setup}
 
@@ -152,7 +139,22 @@ AlexNet uses 5 convolution layers to extract features and 3 fully connected laye
 Each layer has rectified linear unit(ReLU) layer for nonlinear activation.
 AlexNet has been frequently used for benchmarking performance of machine learning libraries, because it utilizes most of the current DNN components such as convolution, max-pooling and dropout \cite{}.
 The original AlexNet model includes Local response normalization(LRN) layer, but we exclude it for benchmarking task since LRN is very rarely used in current convolutional neural networks.
-The detailed layer structure of AlexNet model on this study is presented in Table \ref{} and Fig \ref{}.
+The detailed layer structure of AlexNet model on this study is presented in Fig \ref{} and Fig \ref{}.
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/alexnet_conv.jpg}
+  \caption{Convolutional feature extractor part of AlexNet model. C:input channel, K:output channel, R:kernel dimension, S:stride, P:padding}
+  \label{fig_alexnet_conv}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/alexnet_fc.jpg}
+  \caption{Fully-connected layers of AlexNet model. The input is the output of Convolutional layers}
+  \label{fig_alexnet_fc}
+\end{figure}
 
 \begin{itemize}
   \item output dimension, number of operation, activation in each layer
@@ -175,17 +177,35 @@ Since forward and backward propagation of convolution layers takes most of the r
 Three types of convolutions are computed for each iteration.
 forward convolution(FWD) computes the layer output, backward data convolution(BD) computes backward gradient input and backward filter convolution(BW) computes gradients of network parameters.
 CuDNN R5 supports matrix multiplication convolution(gemm), FFT convolution, and winograd convolution.
-Winograd convolution cannot be applied to BW convolution yet hence we use fft convolution instead.
+CuDNN has various gemm convolution algorithms and the tested algorithm is implicit gemm precomp algorithm.
+Winograd convolution cannot be applied to BW convolution on CuDNN 5.0 hence we use fft convolution instead.(CuDNN 5.1RC supports winograd nonfused option)
 Since the first convolution layer has stride of 4, Winograd and FFT convolution cannot be applied.
 Direct convolution is tested by Torch binding of Cuda-convnet3.
 All comparisons are done on Torch 7 because Torch can specify convolution algorithm on each layer and newest version of Cuda-convnet3 is only supported by Torch7.
 
 Randomly generated batch inputs are used to remove IO latency.
+The forward and backward propagation time is measured as average of 100 iterations.
 The compute times and statistics of kernels are measured by NVIDIA nvprof profiler.
 The theoretical floating point operation counts are calculated as 2 * K*CRR*NWW since each calculation uses 1 addition and 1 multiplication.
 We compare them to actual floating-point operation counts of the kernels.
 Flops of the kernels are calculated as Flop count/execution time.
 FFT convolution consists of 2 FFTs and 1 complex matrix multiplication, thus statistics of those 3 kernels are added together.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/conv_time}
+  \caption{Forward propagation and Backpropagation times of convolution algorithms. The times are measured as average of 100 batch iterations. 
+Direct convolution is tested with cuda-convnet3 and other 3 are kernels of CuDNN R5. }
+  \label{fig_conv_time}
+\end{figure}
+
+FIg \ref{fig_conv_time} shows execution time comparisons between convolution kernels.
+Winograd convolutoin and FFT convolution always perform better than direct or gemm convolution.
+Winograd performs better than FFT in small batches, while FFT scales better on bigger batch inputs.
+Cuda-convnet shows poor performance on backpropagation.
+The performance limiter of Cuda-convnet backpropation would be identified on layer-wise analysis.
+
+
 
 \begin{itemize}
   \item theoretical flops, real flops
