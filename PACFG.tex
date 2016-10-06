@@ -33,23 +33,21 @@ We also identify differences between 4 convolution algorithm kernels.
 
 \section{Introduction}
 
-\subsection{Convolutional Neural Network}
 Deep neural networks(DNN) have been very successful on various machine learning tasks such as visual recognition, speech recognition and machine translation.
 \cite{}%% DNN papers
 Convolutional neural network(CNN), proposed by LeCun et. al., is one of the earliest successful neural network model used for image classification tasks.
 \cite{}%% lenet
-CNN combined with DNN breakthroughs (e.g. ReLU activation, Dropout layer, Data augumentation) outperformed previous machine learining methods on visual recognition challenge.
+CNN with Deep learning methods (e.g. ReLU activation, Dropout layer, Data augumentation) outperformed previous machine learining methods on visual recognition challenge.
 \cite{}%% alexnet, googlenet, VGG
-Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition tasks uses ensembles of CNN models.
+Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition use ensembles of CNN models.
 \cite{}%% ILSVRC 2016 winner
 CNN models are also being applied to other machine learning tasks other than image recognition. CNN can be applied to action recognition, speech recognition, natural language processing and AI playing game of Go.
 \cite{}%% one of each
 
-\subsection{Deep learning and gpu}
 The biggest advantage of applying DNN is its scalability, means that larger and deeper DNN with more input data usually results in better accuracy.
 Bigger DNN requires more processing power, hence training DNN by typical computer is impractical.
 Luckily, computations in neural network can easily be represented as tensor or matrix operations, which can be efficiently parallelized.
-Therefore parallel processing by GPU made DNN possible to train on single machine.
+Therefore Grahpics Processing Unit(GPU)'s parallel processing power made DNN possible to train on single machine.
 Deep learning frameworks have been developed for easy and efficient implementation of DNN models, and most popular frameworks support GPU acceleration by default.
 \cite{} %% Caffe, Theano, Torch, CNTK, Tensorflow
 Companies and researchers have been trying to implement efficient GPU kernels to improve performance.
@@ -61,14 +59,17 @@ Convolution with CuDNN results in up to 4x performance improvement from default 
 Efficiency of deep learning on single GPU has been improved a lot, however deep learning on multiple GPU still shows poor scalability.
 \cite{} %% model parallelism, distributed deep learning
 
-\subsection{Motivation}
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
 We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
+Microsoft's CNTK should be included with respect to popularity, but it only runs on top of Windows environment while the others are recommended to run on Linux.
+To conduct apple-to-apple comparison, CNTK has been excluded from the list.
 We compare differences in performance characteristics of the frameworks and identify performance limiters of each framework.
-The comparison would find out detailed pros and cons of deep learning frameworks and suggest possible improvements.
+The comparison would provide detailed pros and cons of deep learning frameworks to propspect users.
+Performance limiters identified from this study would help framework developers to improve performance of the frameworks.
 Furthermore, we take a close look into GPU kernels to analyze performance characteristics of different convolution algorithms.
 Based on the analysis, we provide optimization methods to implement efficient CNN model using the GPU deep learning libraries.
 Also we analyze performance characteristics of the frameworks on multi-gpu context to suggest efficient implementation method to use multiple gpus.
+
 
 \section{Related work}
 
