@@ -22,7 +22,7 @@ Email: hwnam831@snu.ac.kr}}
 \maketitle
 
 \begin{abstract}
-Convolutional neural network have been successful in visual recognition tasks.
+Convolutional neural network has been successful in visual recognition tasks.
 Machine learning frameworks are using GPU deep learning libraries to efficiently implement CNNs on GPUs.
 This study analyzes GPU performance characteristics of Theano, Caffe, Torch and Tensorflow via benchmarking AlexNet model on them.
 The GPU utilization and framework overheads are analyzed and we suggest possible optimization methods to increase efficiency.
@@ -54,7 +54,7 @@ CNN models are also being applied to other machine learning tasks other than ima
 The biggest advantage of applying DNN is its scalability, means that larger and deeper DNN with more input data usually results in better accuracy.
 Bigger DNN requires more processing power, hence training DNN by typical computer is impractical.
 Luckily, computations in neural network can easily be represented as tensor or matrix operations, which can be efficiently parallelized.
-Therefore Grahpics Processing Unit(GPU)'s parallel processing power made DNN possible to train on single machine.
+Therefore, Grahpics Processing Unit(GPU)'s parallel processing power made DNN possible to train on single machine.
 Deep learning frameworks have been developed for easy and efficient implementation of DNN models, and most popular frameworks support GPU acceleration by default.
 \cite{DBLP:journals/corr/Al-RfouAAa16,jia2014caffe,tensorflow2015-whitepaper,torch, cntk} 
 Companies and researchers have been trying to implement efficient GPU kernels to improve performance.
@@ -71,7 +71,7 @@ Efficiency of deep learning on single GPU has been improved a lot, while deep le
 
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
 For disambiguation, in this paper the word 'framework' refers to a full collection of libraries to build DNN models, and the word 'library' refers to a GPU kernel library for DNN.
-We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
+We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and TensorFlow by the number of github stars.
 The popular CNN model for benchmarking purpose is AlexNet model.
 \cite{krizhevsky2012imagenet}
 The identically structured AlexNet models are built and trained on the frameworks.
@@ -81,12 +81,12 @@ Cuda-convnet is another GPU library developed by Alex Krizhevsky of AlexNet.
 3 different convolution algorithms of CuDNN are compared with direct convolution algorithm of Cuda-convnet.
 
 The analysis experiments can be divided into 3 parts.
-The first part of the experiments compare differences in performance characteristics of the frameworks.
+The first part of the experiments compares differences in performance characteristics of the frameworks.
 The comparison would provide detailed pros and cons of deep learning frameworks to propspect users.
 Also performance limiters identified from this study would help framework developers to optimize the frameworks.
 The second part of the experiments take a close look into GPU kernels to analyze performance characteristics of different convolution algorithms.
 Based on the analysis, we provide optimization methods to implement efficient CNN model using the GPU deep learning libraries.
-The final part analyze performance characteristics of the frameworks on multi-gpu context.
+The final part analyzes performance characteristics of the frameworks on multi-gpu context.
 Discussion section would contain possible methods to improve multi-gpu scalability.
 
 \section{Related work}
