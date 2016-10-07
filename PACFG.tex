@@ -25,7 +25,14 @@ Email: hwnam831@snu.ac.kr}}
 Convolutional neural network have been successful in visual recognition tasks.
 Machine learning frameworks are using GPU deep learning libraries to efficiently implement CNNs on GPUs.
 This study analyzes GPU performance characteristics of Theano, Caffe, Torch and Tensorflow via benchmarking AlexNet model on them.
-We also identify differences between 4 convolution algorithm kernels.
+The GPU utilization and framework overheads are analyzed and we suggest possible optimization methods to increase efficiency.
+We also identify differences between 4 convolution algorithm kernels - GEMM, direct, FFT and Winograd convolution.
+Layerwise comparison and analysis show performance characteristics of the kernels.
+We suggest criterions for choosing convolution kernels and methods to create efficient CNN model on the GPU.
+As scaling DNN on multi-gpu context becomes important, we compare data parallelism implementations of the frameworks.
+Scalability and synchronization overheads are analyzed.
+We suggest possible methods to improve multi-gpu scalability of the frameworks.
+Also we provide methods to build scalable DNN model on multi-gpu context.
 
 \end{abstract}
 
@@ -33,23 +40,21 @@ We also identify differences between 4 convolution algorithm kernels.
 
 \section{Introduction}
 
-\subsection{Convolutional Neural Network}
 Deep neural networks(DNN) have been very successful on various machine learning tasks such as visual recognition, speech recognition and machine translation.
 \cite{}%% DNN papers
 Convolutional neural network(CNN), proposed by LeCun et. al., is one of the earliest successful neural network model used for image classification tasks.
 \cite{}%% lenet
-CNN combined with DNN breakthroughs (e.g. ReLU activation, Dropout layer, Data augumentation) outperformed previous machine learining methods on visual recognition challenge.
+CNN with Deep learning methods (e.g. ReLU activation, Dropout layer, Data augumentation) outperformed previous machine learining methods on visual recognition challenge.
 \cite{}%% alexnet, googlenet, VGG
-Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition tasks uses ensembles of CNN models.
+Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition use ensembles of CNN models.
 \cite{}%% ILSVRC 2016 winner
 CNN models are also being applied to other machine learning tasks other than image recognition. CNN can be applied to action recognition, speech recognition, natural language processing and AI playing game of Go.
 \cite{}%% one of each
 
-\subsection{Deep learning and gpu}
 The biggest advantage of applying DNN is its scalability, means that larger and deeper DNN with more input data usually results in better accuracy.
 Bigger DNN requires more processing power, hence training DNN by typical computer is impractical.
 Luckily, computations in neural network can easily be represented as tensor or matrix operations, which can be efficiently parallelized.
-Therefore parallel processing by GPU made DNN possible to train on single machine.
+Therefore Grahpics Processing Unit(GPU)'s parallel processing power made DNN possible to train on single machine.
 Deep learning frameworks have been developed for easy and efficient implementation of DNN models, and most popular frameworks support GPU acceleration by default.
 \cite{} %% Caffe, Theano, Torch, CNTK, Tensorflow
 Companies and researchers have been trying to implement efficient GPU kernels to improve performance.
@@ -61,18 +66,21 @@ Convolution with CuDNN results in up to 4x performance improvement from default 
 Efficiency of deep learning on single GPU has been improved a lot, however deep learning on multiple GPU still shows poor scalability.
 \cite{} %% model parallelism, distributed deep learning
 
-\subsection{Motivation}
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
 We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
+Microsoft's CNTK should be included with respect to popularity, but it only runs on top of Windows environment while the others are recommended to run on Linux.
+To conduct apple-to-apple comparison, CNTK has been excluded from the list.
 We compare differences in performance characteristics of the frameworks and identify performance limiters of each framework.
-The comparison would find out detailed pros and cons of deep learning frameworks and suggest possible improvements.
+The comparison would provide detailed pros and cons of deep learning frameworks to propspect users.
+Performance limiters identified from this study would help framework developers to improve performance of the frameworks.
 Furthermore, we take a close look into GPU kernels to analyze performance characteristics of different convolution algorithms.
 Based on the analysis, we provide optimization methods to implement efficient CNN model using the GPU deep learning libraries.
 Also we analyze performance characteristics of the frameworks on multi-gpu context to suggest efficient implementation method to use multiple gpus.
 
+
 \section{Related work}
 
-\subsection{Previous work (comparative study, convnet benchmark, cudnn) - no detailed analysis}
+\subsection{Previous work}
 It has been only a few years since deep learning frameworks were introduced to public.
 Few attempts recently tried to benchmark and compare the performance of the frameworks.
 A benchmark of CNN frameworks is publicly available on Github but it has not been updated for more than an year hence it cannot be used to compare current versions of the frameworks \cite{}.
@@ -83,11 +91,12 @@ This study, however, compares newest versions of the frameworks and provide deta
 And also we compare them on multi-gpu context which has not been done in previous studies.
 
 
-\section{Background (DNN Frameworks)}
+\section{Background}
 
 \subsection{Machine learning frameworks}
 
 \subsubsection{Theano, Torch, Caffe, Tensorflow comparison}
+%TODO
 
 \subsection{Convolution algorithms}
 Several methods are used to efficiently implement convolution on GPU.
@@ -123,7 +132,7 @@ Tensorflow and Torch supports both data and model parallelism while Theano doesn
 
 \section{Experiment setup}
 
-\subsection{test environment}
+\subsection{System setup}
 We test the frameworks on the CentOS 7.2 server with 4 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
 We use Cuda 7.5 and CuDNN R5 which is the latest stable release of Cuda and CuDNN.
 All deep learning frameworks are updated to latest stable release on June 2016.
@@ -132,8 +141,9 @@ Only Torch supports the latest version of Cuda-convnet3.
 The detailed system environments are represented on Table \ref{} and \ref{}.
 
 CentOS 7.2.1511 / Linux 3.10.0-327 / Inte Xeon E5-2650@2.0GHz / 128GB DDR3@1600MHz / CuDNN 5005 / Cuda 7.5 / Torch 7 ccn2.torch, cudnn.torch R5 / Theano 0.8.2 / Caffe * / Tensorflow *
+%TODO
 
-\subsection{Network model and input}
+\subsection{AlexNet model}
 AlexNet \cite{} is one of the earliest successful deep neural networks on image recognition task using ImageNet dataset \cite{}.
 AlexNet uses 5 convolution layers to extract features and 3 fully connected layers for classification.
 Each layer has rectified linear unit(ReLU) layer for nonlinear activation.
@@ -164,23 +174,13 @@ Softmax &           & 1000              & 1000              &           &       
 \end{tabular}
 \end{table*}
 
-\begin{itemize}
-  \item output dimension, number of operation, activation in each layer
-  \item dataset : ILSVRC 2012
-\end{itemize}
 
 \section{Results/Analysis}
 
 \subsection{Single GPU analysis}
 
-\begin{itemize}
-  \item batch : 32, 64, 128
-  \item Total running times, Achieved accuracy (default option, optimized option (specify convolution algorithm))
-  \item FileIO, CPU, GPU, For/Backward, Layerwise (time / flops / memory)
-  \item Framework overhead
-\end{itemize}
 
-\subsection{characterization of different convolution algorithms (kernels)}
+\subsection{characterization of different convolution algorithms}
 Since forward and backward propagation of convolution layers takes most of the running time, we run the same model on different convolution kernel to characterize the performance of each convolution algorithm.
 Three types of convolutions are computed for each iteration.
 forward convolution(FWD) computes the layer output, backward data convolution(BD) computes backward gradient input and backward filter convolution(BW) computes gradients of network parameters.
@@ -208,45 +208,34 @@ Direct convolution is tested with cuda-convnet3 and other 3 are kernels of CuDNN
 \end{figure}
 
 FIg \ref{fig_conv_time} shows execution time comparisons between convolution kernels.
-Winograd convolutoin and FFT convolution always perform better than direct or gemm convolution.
-Winograd performs better than FFT in small batches, while FFT scales better on bigger batch inputs.
-Cuda-convnet shows poor performance on backpropagation.
-The performance limiter of Cuda-convnet backpropation would be identified on layer-wise analysis.
+Winograd convolution and FFT convolution always perform better than direct or gemm convolution, due to smaller floating point operations required.
+FFT has smallest operations count, makes it fastest among algorithms on big batch inputs.
+However FFT scales bad on smaller batch sizes because it executes 5 kernels per each layer.
+The forward propagation speed comparison on conv layer 3,4,5 on (f) of Fig \ref{fig_conv_time} clearly shows the differences.
+Cuda-convnet scales bad when the batch size is smaller than 128 while GEMM convolutoin sclaes almost linearly.
+Winograd performs better when the batch size is smaller than 64, where theoretical operations per each layer is around 20G operations.
+Winograd kernels are more efficient when the sample width is even.
+When we increase the sample width of conv layer 3,4,5 from 13 to 14, the execution time of Winograd kernels decrease by 10\%.
 
-\begin{table}[]
-\centering
-\caption{Flop count}
-\label{my-label1}
-\begin{tabular}{llllll}
-flop   & direct & gemm  & fft  & winograd & theoretical \\
-layer1 & 57.4   & 56.2  & 56.2 & 56.2     & 55          \\
-layer2 & 88.8   & 95.3  & 28.6 & 54.2     & 82          \\
-layer3 & 76.5   & 88.8  & 23   & 47.1     & 65          \\
-layer4 & 103.4  & 133.2 & 34   & 70.5     & 98          \\
-layer5 & 68.9   & 88.8  & 23   & 47       & 65         
-\end{tabular}
-\end{table}
+Number of floating point operations needed for forward propagation and backward propagation kernels are equal on the same layer.
+Therefore, execution time of forward and backward propagation kernels are almost symmetric on most convolution algorithms.
+However, backpropagation kernels of direct convolution takes more execution time than their forward counterparts.
+Especially backward filter convolution on first convolution layer takes 200ms to execute, occupying 40\% of total training time.
+The reason for the slow execution is low parallelism of kernels.
+The backward direct convolution kernels have small thread numbers compared to other algorithms, generating 6 times smaller thread grid size.
+The backward filter convolution for the first layer generates only 1024 threads, while Titan X has 3072 CUDA cores.
 
-\begin{table*}[]
-\centering
-\caption{My caption}
-\label{my-label}
-\begin{tabular}{llllllllllll}
-Layer & \multicolumn{3}{l}{direct} & \multicolumn{3}{l}{gemm} & \multicolumn{3}{l}{FFT} & \multicolumn{2}{l}{Winograd} \\
-      		& fwd      & bd     & bw     & fwd     & bd     & bw    & fwd     & bd    & bw    & fwd           & bd           \\
-conv1 	&          &        &        &         &        &       &         &       &       &               &              \\
-conv2 	&          &        &        &         &        &       &         &       &       &               &              \\
-conv3 	&          &        &        &         &        &       &         &       &       &               &              \\
-conv4 	&          &        &        &         &        &       &         &       &       &               &              \\
-conv5 	&          &        &        &         &        &       &         &       &       &               &             
-\end{tabular}
-\end{table*}
 
-\begin{itemize}
-  \item theoretical flops, real flops
-  \item memory footprint, compute utilization (Memory transactions, Control-instructions, IPC, Memory usage)
-  \item difference between algorithms
-\end{itemize}
+
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/layerwise_bench}
+  \caption{Layerwise analysis of convolution kernels}
+  \label{fig_layerwise}
+\end{figure}
+
 
 \subsection{Multi GPU analysis}
 
