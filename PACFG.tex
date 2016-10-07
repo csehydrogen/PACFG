@@ -42,43 +42,42 @@ Also we provide methods to build scalable DNN model on multi-gpu context.
 \section{Introduction}
 
 Deep neural networks(DNN) have been very successful on various machine learning tasks such as visual recognition, speech recognition and machine translation.
-\cite{}%% DNN papers
 Convolutional neural network(CNN), proposed by LeCun et. al., is one of the earliest successful neural network model used for image classification tasks.
-\cite{}%% lenet
+\cite{726791}%% lenet
 CNN with Deep learning methods (e.g. ReLU activation, Dropout layer, Data augumentation) outperformed previous machine learining methods on visual recognition challenge.
-\cite{}%% alexnet, googlenet, VGG
-Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition use ensembles of CNN models.
-\cite{}%% ILSVRC 2016 winner
+\cite{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14}%% alexnet, googlenet, VGG
+Classification accuracy of CNN models have been improving over time and recent state-of-the-art programs for visual recognition use ensemble of CNN models.
+\cite{ILSVRC15}%% ILSVRC 2016 winner
 CNN models are also being applied to other machine learning tasks other than image recognition. CNN can be applied to action recognition, speech recognition, natural language processing and AI playing game of Go.
-\cite{}%% one of each
+\cite{6857341, cite-key , DBLP:journals/corr/KalchbrennerGB14}%% one of each
 
 The biggest advantage of applying DNN is its scalability, means that larger and deeper DNN with more input data usually results in better accuracy.
 Bigger DNN requires more processing power, hence training DNN by typical computer is impractical.
 Luckily, computations in neural network can easily be represented as tensor or matrix operations, which can be efficiently parallelized.
 Therefore Grahpics Processing Unit(GPU)'s parallel processing power made DNN possible to train on single machine.
 Deep learning frameworks have been developed for easy and efficient implementation of DNN models, and most popular frameworks support GPU acceleration by default.
-\cite{} %% Caffe, Theano, Torch, CNTK, Tensorflow
+\cite{DBLP:journals/corr/Al-RfouAAa16,jia2014caffe,tensorflow2015-whitepaper,torch, cntk} 
 Companies and researchers have been trying to implement efficient GPU kernels to improve performance.
-\cite{} %%fbcunn, Cuda-convnet
 The most popular one is CuDNN, a GPU deep learning library created by NVIDIA that has been adopted as GPU-backend of popular frameworks.
-\cite{} %% CuDNN
+\cite{cudnn} %% CuDNN
 Convolution with CuDNN results in up to 4x performance improvement from default GPU kernels of the frameworks.
-\cite{} %% convnet-benchmark
+\cite{convnet-benchmarks} %% convnet-benchmark
 The another approach to speed up CNN is reducing time complexity of convolution algorithm.
 Fast Fourier transform(FFT) algorithm and Winograd's minimal filtering algorithm successfully reduced algorithm complexity of convolution.
-\cite{} %% fft and winograd
+\cite{fftconv, winograd, fbfft} %% fft and winograd
 Efficiency of deep learning on single GPU has been improved a lot, while deep learning on multiple GPU still showing poor scalability.
-\cite{} %% model parallelism, distributed deep learning
+\cite{DBLP:journals/corr/YadanATR13} %% model parallelism, distributed deep learning
+
 
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
 For disambiguation, in this paper the word 'framework' refers to a full collection of libraries to build DNN models, and the word 'library' refers to a GPU kernel library for DNN.
 We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
 The popular CNN model for benchmarking purpose is AlexNet model.
-\cite{}
+\cite{krizhevsky2012imagenet}
 The identically structured AlexNet models are built and trained on the frameworks.
 All 4 frameworks use CuDNN as GPU backend library.
 Cuda-convnet is another GPU library developed by Alex Krizhevsky of AlexNet.
-\cite{}
+\cite{cuda-convnet}
 3 different convolution algorithms of CuDNN are compared with direct convolution algorithm of Cuda-convnet.
 
 The analysis experiments can be divided into 3 parts.
@@ -270,12 +269,8 @@ The backward filter convolution for the first layer generates only 1024 threads,
 
 The authors would like to thank...
 
-\begin{thebibliography}{1}
-
-\bibitem{IEEEhowto:kopka}
-H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
-
-\end{thebibliography}
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,PACFG}
+\nocite{*}
 
 \end{document}
