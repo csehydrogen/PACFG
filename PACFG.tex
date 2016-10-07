@@ -38,6 +38,7 @@ Also we provide methods to build scalable DNN model on multi-gpu context.
 
 \IEEEpeerreviewmaketitle
 
+
 \section{Introduction}
 
 Deep neural networks(DNN) have been very successful on various machine learning tasks such as visual recognition, speech recognition and machine translation.
@@ -58,25 +59,36 @@ Therefore Grahpics Processing Unit(GPU)'s parallel processing power made DNN pos
 Deep learning frameworks have been developed for easy and efficient implementation of DNN models, and most popular frameworks support GPU acceleration by default.
 \cite{} %% Caffe, Theano, Torch, CNTK, Tensorflow
 Companies and researchers have been trying to implement efficient GPU kernels to improve performance.
-\cite{} %% fft-conv, fbcunn, Winograd, Cuda-convnet
+\cite{} %%fbcunn, Cuda-convnet
 The most popular one is CuDNN, a GPU deep learning library created by NVIDIA that has been adopted as GPU-backend of popular frameworks.
 \cite{} %% CuDNN
 Convolution with CuDNN results in up to 4x performance improvement from default GPU kernels of the frameworks.
 \cite{} %% convnet-benchmark
-Efficiency of deep learning on single GPU has been improved a lot, however deep learning on multiple GPU still shows poor scalability.
+The another approach to speed up CNN is reducing time complexity of convolution algorithm.
+Fast Fourier transform(FFT) algorithm and Winograd's minimal filtering algorithm successfully reduced algorithm complexity of convolution.
+\cite{} %% fft and winograd
+Efficiency of deep learning on single GPU has been improved a lot, while deep learning on multiple GPU still showing poor scalability.
 \cite{} %% model parallelism, distributed deep learning
 
 In this study, we analyze GPU performance characteristics of convolutional neural network on different frameworks or libraries.
+For disambiguation, in this paper the word 'framework' refers to a full collection of libraries to build DNN models, and the word 'library' refers to a GPU kernel library for DNN.
 We choose 4 most popular deep learning frameworks, Theano, Caffe, Torch and Tensorflow by the number of github stars.
-Microsoft's CNTK should be included with respect to popularity, but it only runs on top of Windows environment while the others are recommended to run on Linux.
-To conduct apple-to-apple comparison, CNTK has been excluded from the list.
-We compare differences in performance characteristics of the frameworks and identify performance limiters of each framework.
-The comparison would provide detailed pros and cons of deep learning frameworks to propspect users.
-Performance limiters identified from this study would help framework developers to improve performance of the frameworks.
-Furthermore, we take a close look into GPU kernels to analyze performance characteristics of different convolution algorithms.
-Based on the analysis, we provide optimization methods to implement efficient CNN model using the GPU deep learning libraries.
-Also we analyze performance characteristics of the frameworks on multi-gpu context to suggest efficient implementation method to use multiple gpus.
+The popular CNN model for benchmarking purpose is AlexNet model.
+\cite{}
+The identically structured AlexNet models are built and trained on the frameworks.
+All 4 frameworks use CuDNN as GPU backend library.
+Cuda-convnet is another GPU library developed by Alex Krizhevsky of AlexNet.
+\cite{}
+3 different convolution algorithms of CuDNN are compared with direct convolution algorithm of Cuda-convnet.
 
+The analysis experiments can be divided into 3 parts.
+The first part of the experiments compare differences in performance characteristics of the frameworks.
+The comparison would provide detailed pros and cons of deep learning frameworks to propspect users.
+Also performance limiters identified from this study would help framework developers to optimize the frameworks.
+The second part of the experiments take a close look into GPU kernels to analyze performance characteristics of different convolution algorithms.
+Based on the analysis, we provide optimization methods to implement efficient CNN model using the GPU deep learning libraries.
+The final part analyze performance characteristics of the frameworks on multi-gpu context.
+Discussion section would contain possible methods to improve multi-gpu scalability.
 
 \section{Related work}
 
