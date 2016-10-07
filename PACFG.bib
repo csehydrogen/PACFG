@@ -1,14 +1,57 @@
-@article{DBLP:journals/corr/MathieuHL13,
-  author    = {Micha{\"{e}}l Mathieu and
-               Mikael Henaff and
-               Yann LeCun},
-  title     = {Fast Training of Convolutional Networks through FFTs},
+
+@inproceedings{krizhevsky2012imagenet,
+  title={Imagenet classification with deep convolutional neural networks},
+  author={Krizhevsky, Alex and Sutskever, Ilya and Hinton, Geoffrey E},
+  booktitle={Advances in neural information processing systems},
+  pages={1097--1105},
+  year={2012}
+}
+
+@article{DBLP:journals/corr/BahrampourRSS15,
+  author    = {Soheil Bahrampour and
+               Naveen Ramakrishnan and
+               Lukas Schott and
+               Mohak Shah},
+  title     = {Comparative Study of Caffe, Neon, Theano, and Torch for Deep Learning},
   journal   = {CoRR},
-  volume    = {abs/1312.5851},
-  year      = {2013},
-  url       = {http://arxiv.org/abs/1312.5851},
-  timestamp = {Mon, 06 Jan 2014 15:10:41 +0100},
-  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/MathieuHL13},
+  volume    = {abs/1511.06435},
+  year      = {2015},
+  url       = {http://arxiv.org/abs/1511.06435},
+  timestamp = {Tue, 01 Dec 2015 19:22:34 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/BahrampourRSS15},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{DBLP:journals/corr/ShiWXC16,
+  author    = {Shaohuai Shi and
+               Qiang Wang and
+               Pengfei Xu and
+               Xiaowen Chu},
+  title     = {Benchmarking State-of-the-Art Deep Learning Software Tools},
+  journal   = {CoRR},
+  volume    = {abs/1608.07249},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1608.07249},
+  timestamp = {Fri, 02 Sep 2016 17:46:24 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/ShiWXC16},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{DBLP:journals/corr/ChetlurWVCTCS14,
+  author    = {Sharan Chetlur and
+               Cliff Woolley and
+               Philippe Vandermersch and
+               Jonathan Cohen and
+               John Tran and
+               Bryan Catanzaro and
+               Evan Shelhamer},
+  title     = {cuDNN: Efficient Primitives for Deep Learning},
+  journal   = {CoRR},
+  volume    = {abs/1410.0759},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1410.0759},
+  timestamp = {Sun, 02 Nov 2014 11:25:59 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/ChetlurWVCTCS14},
   bibsource = {dblp computer science bibliography, http://dblp.org}
 }
 
@@ -88,12 +131,102 @@ author={
   year={2015},
 }
 
+@inproceedings{torch,
+  title = {Torch7: A Matlab-like Environment for Machine Learning},
+  author = {R. Collobert and K. Kavukcuoglu and C. Farabet},
+  booktitle = {BigLearn, NIPS Workshop},
+  year = {2011}
+}
+
+@techreport{cntk,
+author = {Dong Yu and 
+Adam Eversole and 
+Mike Seltzer and 
+Kaisheng Yao and 
+Oleksii Kuchaiev and 
+Yu Zhang and 
+Frank Seide and 
+Zhiheng Huang and 
+Brian Guenter and 
+Huaming Wang and 
+Jasha Droppo and 
+Geoffrey Zweig and 
+Chris Rossbach and 
+Jie Gao and 
+Andreas Stolcke and 
+Jon Currey and 
+Malcolm Slaney and 
+Guoguo Chen and 
+Amit Agarwal and 
+Chris Basoglu and 
+Marko Padmilac and 
+Alexey Kamenev and 
+Vladimir Ivanov and 
+Scott Cypher and 
+Hari Parthasarathi and 
+Bhaskar Mitra and 
+Baolin Peng and 
+Xuedong Huang},
+title = {An Introduction to Computational Networks and the Computational Network Toolkit},
+booktitle = {},
+year = {2014},
+month = {October},
+
+publisher = {Microsoft Research},
+url = {https://www.microsoft.com/en-us/research/publication/an-introduction-to-computational-networks-and-the-computational-network-toolkit/},
+
+}
+
+@article{cudnn,
+  author    = {Sharan Chetlur and
+               Cliff Woolley and
+               Philippe Vandermersch and
+               Jonathan Cohen and
+               John Tran and
+               Bryan Catanzaro and
+               Evan Shelhamer},
+  title     = {cuDNN: Efficient Primitives for Deep Learning},
+  journal   = {CoRR},
+  volume    = {abs/1410.0759},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1410.0759},
+  timestamp = {Sun, 02 Nov 2014 11:25:59 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/ChetlurWVCTCS14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
 @electronic{cuda-convnet,
   title         = "cuda-convnet",
   url           = "https://code.google.com/p/cuda-convnet/"
 }
 
-@article{DBLP:journals/corr/VasilacheJMCPL14,
+@article{winograd,
+  author    = {Andrew Lavin},
+  title     = {Fast Algorithms for Convolutional Neural Networks},
+  journal   = {CoRR},
+  volume    = {abs/1509.09308},
+  year      = {2015},
+  url       = {http://arxiv.org/abs/1509.09308},
+  timestamp = {Thu, 01 Oct 2015 14:28:48 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/Lavin15b},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{fftconv,
+  author    = {Micha{\"{e}}l Mathieu and
+               Mikael Henaff and
+               Yann LeCun},
+  title     = {Fast Training of Convolutional Networks through FFTs},
+  journal   = {CoRR},
+  volume    = {abs/1312.5851},
+  year      = {2013},
+  url       = {http://arxiv.org/abs/1312.5851},
+  timestamp = {Mon, 06 Jan 2014 15:10:41 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/MathieuHL13},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{fbfft,
   author    = {Nicolas Vasilache and
                Jeff Johnson and
                Micha{\"{e}}l Mathieu and
@@ -107,6 +240,21 @@ author={
   url       = {http://arxiv.org/abs/1412.7580},
   timestamp = {Thu, 01 Jan 2015 19:51:08 +0100},
   biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/VasilacheJMCPL14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@article{DBLP:journals/corr/YadanATR13,
+  author    = {Omry Yadan and
+               Keith Adams and
+               Yaniv Taigman and
+               Marc'Aurelio Ranzato},
+  title     = {Multi-GPU Training of ConvNets},
+  journal   = {CoRR},
+  volume    = {abs/1312.5853},
+  year      = {2013},
+  url       = {http://arxiv.org/abs/1312.5853},
+  timestamp = {Mon, 06 Jan 2014 15:10:41 +0100},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/YadanATR13},
   bibsource = {dblp computer science bibliography, http://dblp.org}
 }
 
@@ -184,3 +332,37 @@ keywords={backpropagation;convolution;multilayer perceptrons;optical character r
 doi={10.1109/5.726791}, 
 ISSN={0018-9219}, 
 month={Nov},}
+
+@article{ILSVRC15,
+Author = {Olga Russakovsky and Jia Deng and Hao Su and Jonathan Krause and Sanjeev Satheesh and Sean Ma and Zhiheng Huang and Andrej Karpathy and Aditya Khosla and Michael Bernstein and Alexander C. Berg and Li Fei-Fei},
+Title = {{ImageNet Large Scale Visual Recognition Challenge}},
+Year = {2015},
+journal   = {International Journal of Computer Vision (IJCV)},
+doi = {10.1007/s11263-015-0816-y},
+volume={115},
+number={3},
+pages={211-252}
+}
+
+@article{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14,
+  author    = {Olga Russakovsky and
+               Jia Deng and
+               Hao Su and
+               Jonathan Krause and
+               Sanjeev Satheesh and
+               Sean Ma and
+               Zhiheng Huang and
+               Andrej Karpathy and
+               Aditya Khosla and
+               Michael S. Bernstein and
+               Alexander C. Berg and
+               Fei{-}Fei Li},
+  title     = {ImageNet Large Scale Visual Recognition Challenge},
+  journal   = {CoRR},
+  volume    = {abs/1409.0575},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1409.0575},
+  timestamp = {Mon, 01 Jun 2015 08:26:31 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/RussakovskyDSKSMHKKBBF14},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
