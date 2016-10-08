@@ -2,3 +2,5 @@
 *.log
 *.aux
 *.tex~
+*.bbl
+*.blg
