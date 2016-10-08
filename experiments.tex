@@ -1,0 +1,43 @@
+\section{Experiment setup}
+
+\subsection{System setup}
+We test the frameworks on the CentOS 7.2 server with 4 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
+We use Cuda 7.5 and CuDNN R5 which is the latest stable release of Cuda and CuDNN.
+All deep learning frameworks are updated to latest stable release on June 2016.
+The versions of the frameworks fully support CuDNN R5.
+Only Torch supports the latest version of Cuda-convnet3.
+The detailed system environments are represented on Table \ref{} and \ref{}.
+
+CentOS 7.2.1511 / Linux 3.10.0-327 / Inte Xeon E5-2650@2.0GHz / 128GB DDR3@1600MHz / CuDNN 5005 / Cuda 7.5 / Torch 7 ccn2.torch, cudnn.torch R5 / Theano 0.8.2 / Caffe * / Tensorflow *
+%TODO
+
+\subsection{AlexNet model}
+AlexNet \cite{} is one of the earliest successful deep neural networks on image recognition task using ImageNet dataset \cite{}.
+AlexNet uses 5 convolution layers to extract features and 3 fully connected layers for classification.
+Each layer has rectified linear unit(ReLU) layer for nonlinear activation.
+AlexNet has been frequently used for benchmarking performance of machine learning libraries, because it utilizes most of the current DNN components such as convolution, max-pooling and dropout \cite{}.
+The original AlexNet model includes Local response normalization(LRN) layer, but we exclude it for benchmarking task since LRN is very rarely used in current convolutional neural networks.
+The detailed layer structure of AlexNet model on this study is presented in Table \ref{}.
+
+
+\begin{table*}[]
+\centering
+\caption{Alexnet model used on benchmarking}
+\label{alex_model}
+\begin{tabular}{llllllll}
+Name    & Kernel(R) & Input Channels(C) & Ouput Channels(K) & Stride(K) & Sample width(W) & Params & Flop \\
+Input   &           & 3                 &                   &           & 227 x 227       &        &      \\
+Conv1   & 11 x 11   & 3                 & 96                & 4         & 55 x 55         & 35K    & 55G  \\
+Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
+Conv2   & 5 x 5     & 96                & 256               & 1         & 27 x 27         & 614K   & 227G \\
+Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
+Conv3   & 3 x 3     & 256               & 384               & 1         & 13 x 13         & 885K   & 65G  \\
+Conv4   & 3 x 3     & 384               & 384               & 1         & 13 x 13         & 1.3M   & 98G  \\
+Conv5   & 3 x 3     & 384               & 256               & 1         & 13 x 13         & 885K   & 65G  \\
+Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
+FC6     &           & 256 x 6 x 6       & 4096              &           &                 & 37M    & 74M  \\
+FC7     &           & 4096              & 4096              &           &                 & 16M    & 32M  \\
+FC8     &           & 4096              & 1000              &           &                 & 4M     & 8M   \\
+Softmax &           & 1000              & 1000              &           &                 &        &     
+\end{tabular}
+\end{table*}

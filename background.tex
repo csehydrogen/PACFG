@@ -1,0 +1,38 @@
+\section{Background}
+
+\subsection{Machine learning frameworks}
+
+\subsubsection{Theano, Torch, Caffe, Tensorflow comparison}
+%TODO
+
+\subsection{Convolution algorithms}
+Several methods are used to efficiently implement convolution on GPU.
+Direct convolution is the most straightforward way but needs a lot of specialized kernels to optimize for various input dimensions and corner cases.
+Cuda-convnet \cite{} is the efficient direct convolution library written by Alex Krizhevsky, the author of AlexNet paper.
+CuDNN however, treats convolution as matrix multiplication \cite{}.
+The convolution layer of K kernels with dimension R*R and W*W input with C channels is converted to multiplication of K*CRR filter matrix and CRR*NWW data matrix.
+The dimensions of matrices are very big, hence the multiplication can be parallelized using highly efficient BLAS libraries.
+Converting convolution to matrix might require significant amount of memory bandwidth.
+However, CuDNN computes the multiplication by tiles to hide memory latency while computing \cite{}.
+This method scales well on small batch sizes and can be used on all types of convolution layers.
+The complexity of both methods are basically the same.
+
+FFT convolution uses fast Fourier transform algorithm to reduce algorithm complexity \cite{}.
+FFT significantly reduces the amount of workload but requires much more memory space since filters must be padded to the dimension of inputs.
+However, FFT convolution cannot be applied to convolution with stride more than 1.
+Winograd convolution algorithm is based on convolution as matrix multiplication but reduces algorithm complexity using Winograd's minimal filtering algorithm.
+Winograd’s minimal filtering algorithm follows the idea of Strassen’s algorithm.
+For example, minimal Winograd filter of 2x3 tiling reduces number of matrix multiplication from 6 to 4 \cite{}.
+However, different sized kernel needs its own minimal filtering algorithm, hence CuDNN 5.0 only supports Winograd convolution for filter size of 3x3 \cite{}.
+
+\subsection{Multi-gpu parallelism}
+Multi-gpu implementation of deep neural networks can be implemented by data parallelism or model parallelism \cite{}.
+On data parallelism, a batch of inputs is divided and distributed among devices.
+After backpropagation, the entire gradients of network parameters must be passed to single device in order to compute stochastic gradient descent.
+And then the updated parameters are distributed among devices.
+Hence, the communication cost of data parallelism depends on number of parameters in the network.
+AlexNet has 65M parameters, thus each iteration needs to transfer approximately 520MB of data per GPU.
+On the other hand, model parallelism divides and distributes the network.
+Carefully designed model parallelism of convolution layer outperforms the data parallelism \cite{}.
+However, multi-gpu support on Caffe is limited to data parallelism, therefore we only compare data parallelism efficiencies of the frameworks.
+Tensorflow and Torch supports both data and model parallelism while Theano doesn’t support multi-gpu natively.

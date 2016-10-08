@@ -1,0 +1,52 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{tabularx, booktabs}
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+\newcommand{\Comment}[1]{\textbf{#1}}
+
+
+\begin{document}
+
+\title{Performance Analysis of CNN Frameworks\\
+ for GPUs}
+
+%\author{\IEEEauthorblockN{Heehoon Kim$^{*\ddagger}$ $\quad$ Hyoungwook
+%    Nam$^{\dagger\ddagger}$ $\quad$ Wookeun Jung$^*$ $\quad$ Jaejin Lee$^*$}\\
+%\IEEEauthorblockA{$^*$Department of Computer Science and Engineering,\\
+%$^\dagger$Department of Computer Science and Engineering,\\
+%Seoul National University, Korea\\
+%{\texttt \{heehoon, hyoungwook,
+%  wookeun\}@aces.snu.ac.kr,jaejin@snu.ac.kr}\\
+%http://aces.snu.ac.kr}\\
+%$^{\ddagger}$These two authors contributed equally to this work
+%      as the first authors.
+%}
+
+\maketitle
+
+\begin{abstract}
+\input{abstract}
+\end{abstract}
+
+\IEEEpeerreviewmaketitle
+
+\input{introduction}
+\input{related}
+\input{background}
+\input{experiments}
+\input{analysis}
+\input{conclusion}
+
+
+%\section*{Acknowledgment}
+
+%The authors would like to thank...
+
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,ispass17}
+\nocite{*}
+
+\end{document}
