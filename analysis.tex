@@ -22,17 +22,36 @@ We compare them to actual floating-point operation counts of the kernels.
 Flops of the kernels are calculated as Flop count/execution time.
 FFT convolution consists of 2 FFTs and 1 complex matrix multiplication, thus statistics of those 3 kernels are added together.
 
-\begin{figure*}
+\begin{figure*}[!t]
   \centering
-  \includegraphics[width=\linewidth]{./figures/convgputime}
-  \caption{Forward propagation and Backpropagation times of convolution algorithms. The times are measured as average of 100 batch iterations. 
-Direct convolution is tested with cuda-convnet3 and other 3 are kernels of CuDNN R5.1. }
+  \subfloat[Forward execution time] {\includegraphics[width=.45\linewidth]{./figures/gpu_time_fwd}
+  \label{fig_gpu_time_fwd}}
+  \subfloat[Backpropagation execution time] {\includegraphics[width=.45\linewidth]{./figures/gpu_time_bwd}
+  \label{fig_gpu_time_bwd}}
+  \hfil
+  \subfloat[Forward execution time from conv3 to conv5 layer] {\includegraphics[width=.45\linewidth]{./figures/gpu_time_conv345}
+  \label{fig_gpu_time_conv345}}
+  \subfloat[Memory usage] {\includegraphics[width=.45\linewidth]{./figures/gpu_mem_kernels}
+  \label{fig_gpu_mem}}
+  \caption{Execution time and memory usage comparison of convolution kernels.}
   \label{fig_conv_time}
 \end{figure*}
 
-\begin{figure*}
+\begin{figure*}[!t]
   \centering
-  \includegraphics[width=\linewidth]{./figures/convlayerwise}
+  \subfloat[Forward execution time] {\includegraphics[width=.3\linewidth]{./figures/layerwise_fwd}
+  \label{fig_layerwise_fwd}}
+  \subfloat[Backward Data execution time] {\includegraphics[width=.3\linewidth]{./figures/layerwise_bd}
+  \label{fig_layerwise_bd}}
+  \subfloat[Backward Filter execution time] {\includegraphics[width=.3\linewidth]{./figures/layerwise_bw}
+  \label{fig_layerwise_bw}}
+  \hfil
+  \subfloat[Forward floating point operations count] {\includegraphics[width=.3\linewidth]{./figures/layerwise_fwd}
+  \label{fig_layerwise_flop_count}}
+  \subfloat[Forward Flops throughput] {\includegraphics[width=.3\linewidth]{./figures/layerwise_flops_fwd}
+  \label{fig_layerwise_flops_fwd}}
+  \subfloat[Backward Flops throughput] {\includegraphics[width=.3\linewidth]{./figures/layerwise_flops_bd}
+  \label{fig_layerwise_flops_bd}}
   \caption{Layerwise analysis of convolution kernels}
   \label{fig_layerwise}
 \end{figure*}
