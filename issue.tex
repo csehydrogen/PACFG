@@ -1,0 +1,33 @@
+\section{Issue / Focus of this paper}
+Researchers using CNNs choose among various frameworks based on language preference, OS support, usability, etc.
+Ideally, all frameworks should have the same running time if models and input datasets are identical.
+In a real world, however, this is not true; they even show more than twice speed difference under the same model, input, and system configuration\cite{DBLP:journals/corr/BahrampourRSS15,DBLP:journals/corr/ShiWXC16}.
+One of possible causes is that the frameworks are using different GPU kernels for the same tasks.
+Another is that the frameworks have their own overhead due to the unique implementation structures.
+
+We approached this issue from two points of view, frameworks' end users and developers.
+On the end users' situation, fast execution is critical, since it means fast convergence of the network.
+However, they should not waste much time for rigorous profiling and debugging, since their main interest is accuracy of the trained network, not micro-optimization.
+They can depend on public benchmarks, but it does not help to distinguish the real bottlenecks.
+Even worse, they sometimes do not notice their implementation is slower than normal.
+On the developers' situation, they should know where the bottlenecks occur in order to discard framework overhead or make kernel implementation better.
+
+To see what's exactly happening under the hood, we conducted three experiments.
+In the first experiment, we measured time-based metrics of the frameworks to compare their characteristics.
+Unlike previous work, we measured layer-wise and kernel-wise time as well as mini-batch execution time.
+From the experiment, we identified which kernels are used and work as a bottleneck.
+This suggests developers optimization possibilities by locating slow kernels and framework overhead.
+This will also help end users to choose a framework for their CNN tasks.
+In addition, we increased the speed of training up to twice compared to default option, by changing configuration parameters of the frameworks.
+We didn't modify source codes of the frameworks, i.e., we only gave configuration parameters through interfaces which the framework provides.
+Therefore, end users can easily adapt our techniques without modifying the framework itself.
+
+In the second experiment, we analyzed characteristics of different convolution algorithms by profiling each kernel.
+The experiment revealed better criterion for choosing kernels, depending on the dimensions of the convolution layer.
+We also suggest heuristics to manually select kernels based on criterion we found.
+
+In the last experiment, we conducted experiments on multi-gpu configuration.
+Through the experiment, we checked multi-gpu support and scalability of the state-of-the-art CNN frameworks.
+We also focused on the ratio between computation time and data transfer time in order to locate bottleneck and suggest possible techniques to improve scalability.
+
+%This will also help end users to choose a framework for their CNN tasks.
