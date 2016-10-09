@@ -40,25 +40,48 @@ It also supports C++ and C\# wrappers to evaluate models.
 
 \begin{figure}
   \centering
-  \includegraphics[width=\linewidth]{./figures/convlayer}
-  \caption{An example of typical 1D convolution. K filters of filter size R convolves among input of dimension W with C channels.
-	Each convolutional filter becomes an output channel. Pooled output feature map is fed to the next layer. }
+  \includegraphics[width=\linewidth]{./figures/conv_2dlayer}
+  \caption{An example of typical 2D convolution layer. }
   \label{fig_convlayer}
+\end{figure}
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/conv_model}
+  \caption{A typical CNN network model }
+  \label{fig_convmodel}
 \end{figure}
 
 \subsection{Convolutional Neural Network}
 Convolutional Neural Network(CNN) is an Artificial Neural Network using convolutional filter to extract features from input.
-Figure \ref{fig_convlayer} shows an example of 1D convolutional layer.
-K filters of filter size R convolves among input data of dimension W.
+Convolution is an operation between two functions which creates a new function defined as an integration of translated pointwise multiplication of two functions.
+\begin{equation}
+\left ( f * g \right )(t) = \int f(x)g(t-x)dx = \int f(t-x)g(x)dx
+\label{def_convolution}
+\end{equation}
+Convolution of two finite sequences can be defined as follows.
+\begin{equation}
+\lbael{def_discrete}
+\left ( f * g \right )[n] = \sum_{1}^{M} f[n + m]g[m]
+\end{equation}
+Convolution can be extended to multiple dimensions.
+A 2D convolution between filter F[R][S] and data D[H][W] can be described with following equation.
+\begin{equation}
+\lbael{def_2d}
+\left ( D * F \right )[h][w] = \sum_{1}^{R}\sum_{1}^{S} D[h + r][w + s] F[r][s]
+\end{equation}
+
+Convolutional neural network on 2D images uses 2D spatial convolution.
+2D spatial convolution is 3-dimensional convolution with the third axis for input channels.
+A batch input of 2D spatial convolution is typically formatted as a 4D tensor of <batch, channel, height, width>(NCHW).
+Figure \ref{fig_convlayer} shows an example of 2D spatial convolutional layer.
+K filters of filter size R * R convolves among input data of dimension W * W.
 Each convolutional filter activation corresponds to a channel of output feature map.
 A nonlinear activation function is applied to calculate an activation of a filter.
-Typical CNN uses Rectified Linear Unit(ReLU) for nonlinear activation.
+Most CNN use Rectified Linear Unit(ReLU) for nonlinear activation to avoid vanishing gradient problem\cite{rectified}.
 A convolution by stride S and padding P creates a feature map of dimension (W - R + P + 1)/S with K channels.
-Usually a pooling layer is applied to reduce the output dimension.
-The convolutional layer can be extended to multi-dimensional data using tesor data structures.
-For example, typical input data for 2D spatial convolution is formatted as 4D tensor of <batch, channel, height, width>(NCHW).
-The convolution filters are formatted as <kernels, height, width>(KRS), convolving along each axis.
-The computational complexity of propagating such convolutional layer is O(K * CRS * NHW).
+Usually a pooling layer is applied to create an output feature map of reduced dimension.
+Output feature map is usually formatted to a same NCHW 4D tensor, which can be used as input data for next convolution layer.
+The computational complexity of computing such convolutional layer is O(K * CRR * NWW).
 
 \subsection{Convolution algorithms}
 Several methods are used to efficiently implement convolution on GPU.

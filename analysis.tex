@@ -9,12 +9,12 @@ Three types of convolutions are computed for each iteration.
 forward convolution(FWD) computes the layer output, backward data convolution(BD) computes backward gradient input and backward filter convolution(BW) computes gradients of network parameters.
 CuDNN R5 supports matrix multiplication convolution(gemm), FFT convolution, and winograd convolution.
 CuDNN has various gemm convolution algorithms and the tested algorithm is implicit gemm precomp algorithm.
-Winograd convolution cannot be applied to BW convolution on CuDNN 5.0 hence we use fft convolution instead.(CuDNN 5.1RC supports winograd nonfused option)
+The Winograd kernel used in the analysis is WINOGRAD NONFUSED kernel which was recently implemented  on cuDNN 5.1.
 Since the first convolution layer has stride of 4, Winograd and FFT convolution cannot be applied.
 Direct convolution is tested by Torch binding of Cuda-convnet3.
-All comparisons are done on Torch 7 because Torch can specify convolution algorithm on each layer and newest version of Cuda-convnet3 is only supported by Torch7.
-
+All comparisons are done on Torch 7 because currently it is the only framework which officialy supports newest versions of cuDNN and Cuda-convnet3.
 Randomly generated batch inputs are used to remove IO latency.
+
 The forward and backward propagation time is measured as average of 100 iterations.
 The compute times and statistics of kernels are measured by NVIDIA nvprof profiler.
 The theoretical floating point operation counts are calculated as 2 * K*CRR*NWW since each calculation uses 1 addition and 1 multiplication.
@@ -22,13 +22,20 @@ We compare them to actual floating-point operation counts of the kernels.
 Flops of the kernels are calculated as Flop count/execution time.
 FFT convolution consists of 2 FFTs and 1 complex matrix multiplication, thus statistics of those 3 kernels are added together.
 
-\begin{figure}
+\begin{figure*}
   \centering
-  \includegraphics[width=\linewidth]{./figures/conv_time}
+  \includegraphics[width=\linewidth]{./figures/convgputime}
   \caption{Forward propagation and Backpropagation times of convolution algorithms. The times are measured as average of 100 batch iterations. 
-Direct convolution is tested with cuda-convnet3 and other 3 are kernels of CuDNN R5. }
+Direct convolution is tested with cuda-convnet3 and other 3 are kernels of CuDNN R5.1. }
   \label{fig_conv_time}
-\end{figure}
+\end{figure*}
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/convlayerwise}
+  \caption{Layerwise analysis of convolution kernels}
+  \label{fig_layerwise}
+\end{figure*}
 
 FIg \ref{fig_conv_time} shows execution time comparisons between convolution kernels.
 Winograd convolution and FFT convolution always perform better than direct or gemm convolution, due to smaller floating point operations required.
@@ -49,15 +56,6 @@ The backward direct convolution kernels have small thread numbers compared to ot
 The backward filter convolution for the first layer generates only 1024 threads, while Titan X has 3072 CUDA cores.
 
 
-
-
-
-\begin{figure}
-  \centering
-  \includegraphics[width=\linewidth]{./figures/layerwise_bench}
-  \caption{Layerwise analysis of convolution kernels}
-  \label{fig_layerwise}
-\end{figure}
 
 
 \subsection{Multi GPU analysis}
