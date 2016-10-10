@@ -1,7 +1,91 @@
 \section{Results/Analysis}
 
-\subsection{Single GPU analysis}
+\subsection{Comparison between frameworks}
+To compare between CNN frameworks, AlexNet was trained for many iterations on each framework.
+The whole process was profiled, and one mini-batch iteration was selected for analysis after the time metrics were stabilized.
+Model parameters and hyperparameters of the solver are carefully equalized previously in order to remove the effect from things other than the framework itself.
+The result is shown in Figure~\ref{fig_time_frameworks}.
 
+\begin{figure*}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/time_frameworks}
+  \caption{
+Layer-wise time of AlexNet training under various framework configurations.
+In the legend, `conv' means convolution layer and `fc' means fully-connected layer.
+Numbers mean the layer order in AlexNet.
+Suffix `f' means forward propagation, and `b' means backward propagation.
+Each alphabet means the following: A = Caffe, B = TensorFlow (default), C = TensorFlow (with NCHW tensor format), D = Theano (default), E = Theano (FFT), F = Theano (guess\_once), G = Theano (time\_once), H = Torch (default), I = Torch (no backward data convolution in the first layer), J = Torch (FFT), K = Torch (benchmark option).
+}
+  \label{fig_time_frameworks}
+\end{figure*}
+
+First, we focused at how each framework chose kernels.
+Caffe did not provide any user options to affect kernel choices.
+Instead, Caffe depended on cuDNN's heuristics, which try to determine the best suited algorithm under the given specification.
+Surprisingly, Caffe did not have appropriate memory strategy for kernels yet, just passing 8MB workspace limit as an argument.
+Low-memory required algorithms, such as gemm and winograd, were selected, resulting in low performance compared to other frameworks.
+Tensorflow also did not provide options for kernel choices.
+Unlike Caffe, however, it executed all available algorithms on the first run by itself.
+Only the fastest kernels in each layer were executed for subsequent runs.
+Under the AlexNet, FFT algorithms were chosen for all convolution layers except the first layer, where FFT cannot be used due to stride of 4.
+One downside was that algorithms were chosen from hardcoded set, so recently added option (like WINOGRAD\_NONFUSED) was not included.
+
+On the other hand, Theano provide full access on the kernel choices.
+We could specify convolution algorithms to be used, globally or layer-by-layer.
+We found layerwise option is better, since implicit gemm is chosen as fallback if the layer specification does not match global option, and it can even be slower than explicit gemm which is the default option.
+This is the reason why the first layer of E in Fig~\ref{fig_time_frameworks} is slower than F, G, and even D.
+Theano also had `guess\_once' option, which depended on cuDNN's heuristics like Caffe but provided proper arguments.
+`time\_once' option was provided, too, which depended on cuDNN's functionality that run all available convolution algorithms and chose the fastest one.
+Theano did not have downside like TensorFlow had, because it directly used cuDNN's API.
+If `time\_once' option was on, it used gemm on the first layer and had mixed use of FFT and winograd on the rest convolution layer.
+When `guess\_once' option was on, it used slightly different kernels but showed almost identical running time with `time\_once' option, proving that heuristic of cuDNN is quite reliable.
+Although Theano executed the fastest convolution kernels, Theano did not have the fastest convolution when it came to the whole layer.
+Theano used its own runtime-compiled kernels for bias add and ReLU activation, and they were more than twice slower than cudnn's or other libraries'. (Table~\ref{table_misc_kernel})
+Torch provided full control on the kernel choices, similar to Theano.
+Torch's cuDNN backend, cudnn.torch had cudnn.benchmark option which is the same with `time\_once' in Theano.
+When benchmark option is on, Torch showed overall fastest execution time among four frameworks.
+
+\begin{table*}[]
+\centering
+\caption{misc. kernels}
+\label{table_misc_kernel}
+\begin{tabular}{llllll}
+\multicolumn{2}{l}{Framework} & Caffe & TensorFlow & Theano & Torch \\ \hline
+Bias addition    & From       & cuDNN & TensorFlow & Theano & cuDNN \\
+                 & Time (ms)  & 2.64  & 2.84       & 7.88   & 2.63  \\
+ReLU activation  & From       & cuDNN & Eigen      & Theano & cuDNN \\
+                 & Time (ms)  & 2.56  & 2.43       & 4.59   & 2.56 
+\end{tabular}
+
+This table is about kernels included in convolution layers, but not directly participating in convolutions.
+`From' means which library kernels came from.
+Times are measured in the first convolution layer.
+Noticeably, Theano uses kernels which are compiled in runtime and they are quite slow compare to others.
+\end{table*}
+
+We also found a few phenomenons in terms of framework overhead.
+The most noticable one was the tensor format.
+Caffe, Theano, and Torch used NCHW tensor format, which means (batch, channel, height, width) dimensions.
+Tensorflow supported NCHW, but it used NHWC more popularly.
+Its tutorial codes used NHWC format, and many functions, like conv2d, used NHWC as a default argument.
+While NHWC can be faster when there are channel-wise operations, some cuDNN's convolution kernels (such as FFT) only support NCHW format.
+Besides, TensorFlow always do NHWC-to-NCHW dimension swap even if it is using NHWC-supported kernels.
+Therefore, using NHWC tensor format leads to intensive dimension swapping before and after the convolution.
+In our AlexNet, just changing tensor format from NHWC to NCHW led to about 15\% improve in speed on TensorFlow.
+Second issue was backward data convolution in the first convolution layer.
+The first layer does not have previous layer to update parameters, so it does not need backward data convolution, which basically calculates output gradients for the previous layer.
+Caffe and Theano automatically did not execute the operation, and it can be disabled by setting gradInput of the first layer to nil.
+On TensorFlow, however, we did not find any option to disable the operation through train.MomentumOptimizer, leading to slow backward pass in the first layer.
+
+%그 외 사소한 것으로 텐서에 네트워크 입력을 feed_dict로 주면 CPU 복사가 일어나서 매우 느리므로 FixedLengthRecordReader 등으로 주는게 좋다.
+%https://github.com/tensorflow/tensorflow/issues/2919
+
+%https://github.com/BVLC/caffe/blob/rc3/src/caffe/layers/cudnn_conv_layer.cpp#L113
+%https://github.com/tensorflow/tensorflow/blob/v0.10.0rc0/tensorflow/core/kernels/conv_ops.cc#L460
+%https://github.com/tensorflow/tensorflow/blob/v0.10.0rc0/tensorflow/stream_executor/cuda/cuda_dnn.cc#L933
+%https://github.com/Theano/Theano/blob/rel-0.8.2/theano/sandbox/cuda/dnn.py#L285
+%https://github.com/Theano/Theano/blob/rel-0.8.2/theano/sandbox/cuda/dnn_fwd.c#L227
+%https://github.com/soumith/cudnn.torch/blob/R5/SpatialConvolution.lua#L166
 
 \subsection{characterization of different convolution algorithms}
 Since forward and backward propagation of convolution layers takes most of the running time, we run the same model on different convolution kernel to characterize the performance of each convolution algorithm.
@@ -85,25 +169,10 @@ Even if FFT has slower Flops throughput, FFT convolution is usually the fastest 
 Especially on convolution layer 2 which uses 5x5 filter for convolution, FFT convolution is much faster than other algorithms becuase computation complexity of FFT does not depend on filter sizes.
 Winograd's filtering algorithm also reduces Flop count by more than half makes perform similar to FFT convolution on convolution layers with 3x3 filters.
 
-
-
-
-
-
-
 \subsection{Multi GPU analysis}
 
 \begin{itemize}
   \item Support
   \item Scalability : proportion of data exchange
   \item Synchronization cost
-\end{itemize}
-
-\section{Discussion / Conclusion}
-
-\begin{itemize}
-  \item Summary of results
-  \item Compare frameworks : Implementation difference
-  \item Locate bottleneck / suggest possible optimization
-  \item Limitation, future research
 \end{itemize}
