@@ -4,7 +4,20 @@
 To compare between CNN frameworks, AlexNet was trained for many iterations on each framework.
 The whole process was profiled, and one mini-batch iteration was selected for analysis after the time metrics were stabilized.
 Model parameters and hyperparameters of the solver are carefully equalized previously in order to remove the effect from things other than the framework itself.
-The result is shown in Figure~\ref{}.
+The result is shown in Figure~\ref{fig_time_frameworks}.
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=\linewidth]{./figures/time_frameworks}
+  \caption{
+Layer-wise time of AlexNet training under various framework configurations.
+In the legend, `conv' means convolution layer and `fc' means fully-connected layer.
+Numbers mean the layer order in AlexNet.
+Suffix `f' means forward propagation, and `b' means backward propagation.
+Each alphabet means the following: A = Caffe, B = TensorFlow (default), C = TensorFlow (with NCHW tensor format), D = Theano (default), E = Theano (FFT), F = Theano (guess\_once), G = Theano (time\_once), H = Torch (default), I = Torch (no backward data convolution in the first layer), J = Torch (FFT), K = Torch (benchmark option).
+}
+  \label{fig_time_frameworks}
+\end{figure*}
 
 First, we focused at how each framework chose kernels.
 Caffe did not provide any user options to affect kernel choices.
@@ -16,21 +29,38 @@ Unlike Caffe, however, it executed all available algorithms on the first run by 
 Only the fastest kernels in each layer were executed for subsequent runs.
 Under the AlexNet, FFT algorithms were chosen for all convolution layers except the first layer, where FFT cannot be used due to stride of 4.
 One downside was that algorithms were chosen from hardcoded set, so recently added option (like WINOGRAD\_NONFUSED) was not included.
+
 On the other hand, Theano provide full access on the kernel choices.
 We could specify convolution algorithms to be used, globally or layer-by-layer.
 We found layerwise option is better, since implicit gemm is chosen as fallback if the layer specification does not match global option, and it can even be slower than explicit gemm which is the default option.
-%TODO see first layer of theano fft
-Theano also had 'guess\_once' option, which depended on cuDNN's heuristics like Caffe but provided proper arguments.
-'time\_once' option was provided, too, which depended on cuDNN's functionality that run all available convolution algorithms and chose the fastest one.
+This is the reason why the first layer of E in Fig~\ref{fig_time_frameworks} is slower than F, G, and even D.
+Theano also had `guess\_once' option, which depended on cuDNN's heuristics like Caffe but provided proper arguments.
+`time\_once' option was provided, too, which depended on cuDNN's functionality that run all available convolution algorithms and chose the fastest one.
 Theano did not have downside like TensorFlow had, because it directly used cuDNN's API.
-If 'time\_once' option was on, it used gemm on the first layer and had mixed use of FFT and winograd on the rest convolution layer.
-When 'guess\_once' option was on, it used slightly different kernels but showed almost identical running time with 'time\_once' option, proving that heuristic of cuDNN is quite reliable.
+If `time\_once' option was on, it used gemm on the first layer and had mixed use of FFT and winograd on the rest convolution layer.
+When `guess\_once' option was on, it used slightly different kernels but showed almost identical running time with `time\_once' option, proving that heuristic of cuDNN is quite reliable.
 Although Theano executed the fastest convolution kernels, Theano did not have the fastest convolution when it came to the whole layer.
-Theano used its own runtime-compiled kernels for bias add and ReLU activation, and they were more than twice slower than cudnn's or other libraries'.
-%TODO table needed
+Theano used its own runtime-compiled kernels for bias add and ReLU activation, and they were more than twice slower than cudnn's or other libraries'. (Table~\ref{table_misc_kernel})
 Torch provided full control on the kernel choices, similar to Theano.
-Torch's cuDNN backend, cudnn.torch had cudnn.benchmark option which is the same with 'time\_once' in Theano.
+Torch's cuDNN backend, cudnn.torch had cudnn.benchmark option which is the same with `time\_once' in Theano.
 When benchmark option is on, Torch showed overall fastest execution time among four frameworks.
+
+\begin{table}[]
+\centering
+\caption{misc. kernels}
+\label{table_misc_kernel}
+\begin{tabular}{llllll}
+\multicolumn{2}{l}{Framework} & Caffe & TensorFlow & Theano & Torch \\ \hline
+Bias addition    & From       & cuDNN & TensorFlow & Theano & cuDNN \\
+                 & Time (ms)  & 2.64  & 2.84       & 7.88   & 2.63  \\
+ReLU activation  & From       & cuDNN & Eigen      & Theano & cuDNN \\
+                 & Time (ms)  & 2.56  & 2.43       & 4.59   & 2.56 
+\end{tabular}
+This table is about kernels included in convolution layers, but not directly participating in convolutions.
+`From' means which library kernels came from.
+Times are measured in the first convolution layer.
+Noticeably, Theano uses kernels which are compiled in runtime and they are quite slow compare to others.
+\end{table}
 
 We also found a few phenomenons in terms of framework overhead.
 The most noticable one was the tensor format.
@@ -101,17 +131,12 @@ The reason for the slow execution is low parallelism of kernels.
 The backward direct convolution kernels have small thread numbers compared to other algorithms, generating 6 times smaller thread grid size.
 The backward filter convolution for the first layer generates only 1024 threads, while Titan X has 3072 CUDA cores.
 
-
-
-
-
 \begin{figure}
   \centering
   \includegraphics[width=\linewidth]{./figures/layerwise_bench}
   \caption{Layerwise analysis of convolution kernels}
   \label{fig_layerwise}
 \end{figure}
-
 
 \subsection{Multi GPU analysis}
 
