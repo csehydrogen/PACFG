@@ -1,1 +1,17 @@
-\section{Conclusions}
+\section{Conclusions and Future work}
+
+In this study, we analyzed GPU performance characteristics of CNN frameworks and libraries.
+The framework comparison reveals the differences in implementations of the frameworks.
+%TODO analysis A summary
+The convolution algorithm analysis shows performance characteristics of different convolution kernels.
+Direct convolution can be faster than GEMM convolution in forward propagation, but the backpropagation performance is very poor.
+FFT is usually the fastest algorithm among all, taking up 20\% more GPU memory space.
+Since performance of FFT does not depend on filter sizes, FFT can speed up layers using filter size bigger than 5x5 significantly.
+However, Winograd convolution can be faster than FFT on 3x3 filter convolution layers with small batch inputs.
+Multi-gpu analysis compares scalability and synchronization overhead of the frameworks.
+Scalability of data paralellism approch is bounded by communication overhead of parameters.
+%TODO analysis C summary
+Therefore reducing the amount of parameter communication would achieve better scalability of data parallelism.
+Also model parallelism on Torch or Tensorflow would be better choice to scale on multi-gpu if possible.
+Parameter reducing methods of pruning or quantization methods might improve multi gpu scalability.\cite{squeezenet, deepcompression}.
+These methods could be our future work to improve DNN scalability on multi-GPU or distributed GPU environment.
