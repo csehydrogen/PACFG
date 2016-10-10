@@ -1,11 +1,11 @@
 \section{Experiment setup}
 
 \subsection{System setup}
-We test the frameworks on the CentOS 7.2 server with 4 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
-We use Cuda 7.5 and CuDNN R5 which is the latest stable release of Cuda and CuDNN.
-All deep learning frameworks are updated to latest stable release on June 2016.
-The versions of the frameworks fully support CuDNN R5.
-Only Torch supports the latest version of Cuda-convnet3.
+We test the frameworks on the CentOS 7.2 server with 2 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
+We use Cuda 7.5 and cuDNN R5 which is officially supported by current versions of the frameworks.
+Torch is currently the only framework that officially support cuDNN R5.1.
+Also the newest Cuda-convnet3 is only supported by Torch's ccn2.torch module.
+The comparisons between frameworks are done with same cuDNN R5 and the gpu kernel analysis is done using cuDNN R5.1 with Torch7.
 The detailed environments are described on Table \ref{table_system} and \ref{table_software}.
 
 \begin{table}[]

@@ -162,7 +162,7 @@ The theoretical floating point operation counts are calculated as 2 * K*CRR*NWW 
 FFT convolution consists of 1 filter flip kernel, 2 FFTs and 1 complex GEMM kernel.
 Similarily nonfused Winograd convolution consists of 3 Tiling kernels and 36(in case of 3x3 filter) or 167(in case of 5x5 filter) GEMM kernels.
 The statistics of those kernels are added up together per layer for the result.
-Flops throughputs of the kernels shown in Fig \ref{fig_layerwise_flops_fwd, fig_layerwise_flops_bd} are calculated as Flop count/execution time.
+Flops throughputs of the kernels shown in Fig \ref{fig_layerwise_flops_fwd} and Fig \ref{ fig_layerwise_flops_bd} are calculated as Flop count/execution time.
 Compared to maximum Flops throughput of Nvidia TitanX is 6TFlops, most convolution kernels show throughput more than 3TFlops.
 The Flops throughput result indicate that convolution kernels are compute bounded rather than memory.
 Even if FFT has slower Flops throughput, FFT convolution is usually the fastest due to much less algorithm complexity.
