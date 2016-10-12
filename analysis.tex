@@ -169,10 +169,105 @@ Even if FFT has slower Flops throughput, FFT convolution is usually the fastest 
 Especially on convolution layer 2 which uses 5x5 filter for convolution, FFT convolution is much faster than other algorithms becuase computation complexity of FFT does not depend on filter sizes.
 Winograd's filtering algorithm also reduces Flop count by more than half makes perform similar to FFT convolution on convolution layers with 3x3 filters.
 
-\subsection{Multi GPU analysis}
+\subsection{Multi-GPU analysis}
 
-\begin{itemize}
-  \item Support
-  \item Scalability : proportion of data exchange
-  \item Synchronization cost
-\end{itemize}
+To analyze multi-GPU scalability of frameworks, AlexNet was trained on each framework with 1 GPU, 2 GPU, and 4 GPU.
+We adopted data-parallelism approach, which means that the same model resides in each GPU and input data is divided to feed each GPU.
+After training in each GPU, gradients should be accumulated in one GPU for gradient update.
+If gradients are gathered sequentially(i.e., $GPU_1$ to $GPU_0$, then $GPU_2$ to $GPU_0$, ...), it takes $(N-1)$ gradients transfer time.
+However, if gradients are accumulated in a fashion noted at Figure~\ref{fig_multigpu_algorithm}, it takes $\log N$ gradients transfer time, under the assumption that transfers can be parallelized if source and destination GPUs are distinct.
+The assumption depends on hardware configuration, so we configured hardwares to support parallel transfers.
+Regarding frameworks, Caffe natively supports the multi-GPU algorithm mentioned above.
+In Torch and TensorFlow, we implemented the algorithm ourselves.
+Theano did not support multi-GPU, so was not tested.
+For training in each GPU, we selected the fastest option based on the our framework comparison experiments.
+
+\begin{figure}
+\begin{algorithmic}[1]
+  \REQUIRE N = the number of GPU
+  \REQUIRE B = batch size
+  \STATE Run forward and backward propagation on each GPU with batch size of $B/N$.
+  \STATE $p\gets 1$
+  \WHILE[Sum reduction in $O(log N)$]{$p\not=2^{N}$}
+    \STATE $i\gets 0$
+    \WHILE[can be parallelized]{$i\not=N$}
+      \STATE Add $GPU_{i+p}$'s gradients to $GPU_{i}$
+      \STATE $i\gets i+p*2$
+    \ENDWHILE
+    \STATE $p\gets p*2$
+  \ENDWHILE
+  \STATE Do SGD on $GPU_{0}$.
+  \STATE $p\gets 2^{N}$
+  \WHILE[Propagate updated gradients.]{$p\not=1$}
+    \STATE $p\gets p/2$
+    \STATE $i\gets 0$
+    \WHILE[can be parallelized]{$i\not=N$}
+      \STATE Clone $GPU_{i}$'s gradients to $GPU_{i+p}$
+      \STATE $i\gets i+p*2$
+    \ENDWHILE
+  \ENDWHILE
+\end{algorithmic}
+  \caption{Algorithm for multi-GPU training}
+  \label{fig_multigpu_algorithm}
+\end{figure}
+
+Ideally, training time is expected to be reduced to $\frac{1}{N}$ if $N$ GPUs are used.
+Due to gradient exchanges, however, it takes much more.
+Table~\ref{table_throughput} shows throughput between all pairs of GPUs.
+Since gradients of our AlexNet is about 250MB, one gradient transfer took about 45ms, which was not negligible considering that one forward-backward propagation took about 200ms. (with batch size 256)
+In case of two GPUs, throughput between cliques $\{0, 1\}$ and $\{2, 3\}$ was distinguishable, so the experiment was conducted with $GPU_0$ and $GPU_2$, as well as $GPU_0$ and $GPU_1$.
+
+\begin{table}[]
+\centering
+\caption{Throughput between all pairs of GPUs}
+\label{table_throughput}
+\begin{tabular}{l|llll}
+GPU \# & 0    & 1    & 2    & 3    \\ \hline
+0      & -    & 5.29 & 6.00 & 6.00 \\
+1      & 5.29 & -    & 5.90 & 5.91 \\
+2      & 6.01 & 6.01 & -    & 5.29 \\
+3      & 5.91 & 5.91 & 5.29 & -   
+\end{tabular}
+
+Unit is GB/s and payload was 250MB, which is about the size of gradients in our AlexNet.
+Data were obtained by CUDA-provided sample code `p2pBandwidthLatencyTest'.
+P2P access was enabled between cliques $\{0, 1\}$ and $\{2, 3\}$.
+Strangely, throughput via P2P access was lower than no P2P access, but that was beyond our research focus.
+\end{table}
+
+Figure~\ref{fig_mg} shows speedup of multi-GPU training on each framework with different batch sizes and the number of GPUs.
+Basically, speedup would be the same with the number of GPUs if there was no memory transfer.
+Thus, if the ratio of memory transfer time over computation time becomes higher, speedup becomes lower.
+This explains the tendency that bigger batch size made speedup higher.
+Bigger batch size made computation time longer, while memory transfer time was fixed since the number of parameters was the same.
+
+Regarding frameworks, Caffe shows quite high speedup.
+However, we should note that slow execution of caffe (longer computation time) made speedup high; so Caffe's high speedup does not mean Caffe has good scalability.
+In case of Torch and TensorFlow, they are comparable because they have similar single-GPU execution time.
+The reason why TensorFlow has much higher speedup is the architecture of the framework.
+TensorFlow handles gradients of each layer as individual tensors, so each gradient are transfered as soon as backward propagation of that layer has finished.
+On the other hand, Torch (and Caffe) references gradients of the whole network as one variable, so it starts transfer after all backward propagations are finished.
+One can mimic Tensorflow's behavior with Torch by disassembling gradients per layer, but the implementation will require much effort.
+
+Focusing on the number of GPUs, we noticed that scalability of frameworks are quite bad.
+If batch size is small, multi-GPU training was similar to or slower than single-GPU training.
+Besides, using 4 GPUs was mostly slower than using 2 GPUs.
+
+Overall, scalability of frameworks suffers from limited throughput between GPUs compared to fast computation time.
+It can be improved by parallelizing computation and memory transfer like TensorFlow did.
+We can think of reducing the size of gradients by using less accuracy. (e.g., half-precision floating-point format, 1-bit in extreme case\cite{1-bit-stochastic-gradient-descent-and-application-to-data-parallel-distributed-training-of-speech-dnns})
+Or reducing the number of gradients by resizing model and pruning, especially on fully-connected layers since more than 90\% of parameters are included in those layers.
+
+\begin{figure*}[]
+  \centering
+  \subfloat[Torch execution time]{\includegraphics[width=.45\linewidth]{./figures/mg_torch}}
+  \subfloat[Caffe execution time]{\includegraphics[width=.45\linewidth]{./figures/mg_caffe}}
+  \hfil
+  \subfloat[TensorFlow execution time]{\includegraphics[width=.45\linewidth]{./figures/mg_tf}}
+  \caption{
+Speedup of multi-GPU training on each framework.
+Here, speedup is calculated by single-GPU execution time of corresponding batch size, divided by multi-GPU execution time.
+}
+  \label{fig_mg}
+\end{figure*}
+
