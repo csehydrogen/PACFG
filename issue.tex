@@ -12,7 +12,7 @@ They can depend on public benchmarks, but it does not help to distinguish the re
 Even worse, they sometimes do not notice their implementation is slower than normal.
 On the developers' situation, they should know where the bottlenecks occur in order to discard framework overhead or make kernel implementation better.
 
-To see what's exactly happening under the hood, we conducted three experiments.
+To see what is exactly happening under the hood, we conducted three experiments.
 In the first experiment, we measured time-based metrics of the frameworks to compare their characteristics.
 Unlike previous work, we measured layer-wise and kernel-wise time as well as mini-batch execution time.
 From the experiment, we identified which kernels are used and work as a bottleneck.
@@ -26,8 +26,5 @@ In the second experiment, we analyzed characteristics of different convolution a
 The experiment revealed better criterion for choosing kernels, depending on the dimensions of the convolution layer.
 We also suggest heuristics to manually select kernels based on criterion we found.
 
-In the last experiment, we conducted experiments on multi-gpu configuration.
-Through the experiment, we checked multi-gpu support and scalability of the state-of-the-art CNN frameworks.
-We also focused on the ratio between computation time and data transfer time in order to locate bottleneck and suggest possible techniques to improve scalability.
-
-%This will also help end users to choose a framework for their CNN tasks.
+In the last experiment, we checked multi-GPU support and measured training speedup on multi-GPU configuration.
+We found tendency of speedup depending on batch size and the number of GPUs, and suggested possible techniques to improve scalability so that users and developers of the frameworks could consider when they use multi-GPU.

@@ -1,11 +1,11 @@
 \section{Experiment setup}
 
 \subsection{System setup}
-We test the frameworks on the CentOS 7.2 server with 2 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) gpus.
-We use Cuda 7.5 and cuDNN R5 which is officially supported by current versions of the frameworks.
+We test the frameworks on the CentOS 7.2 server with 2 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) GPUs.
+We use CUDA 7.5 and cuDNN R5 which is officially supported by current versions of the frameworks.
 Torch is currently the only framework that officially support cuDNN R5.1.
-Also the newest Cuda-convnet3 is only supported by Torch's ccn2.torch module.
-The comparisons between frameworks are done with same cuDNN R5 and the gpu kernel analysis is done using cuDNN R5.1 with Torch7.
+Also the newest cuda-convnet3 is only supported by Torch's ccn2.torch module.
+The comparisons between frameworks are done with same cuDNN R5 and the GPU kernel analysis is done using cuDNN R5.1 with Torch7.
 The detailed environments are described on Table \ref{table_system} and \ref{table_software}.
 
 \begin{table}[]
