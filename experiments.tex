@@ -1,71 +1,43 @@
-\section{Experiment setup}
-
-\subsection{System setup}
-We test the frameworks on the CentOS 7.2 server with 2 octa-core Xeon-E5 cpus and 4 GTX TITAN X(GM200) GPUs.
-We use CUDA 7.5 and cuDNN R5 which is officially supported by current versions of the frameworks.
-Torch is currently the only framework that officially support cuDNN R5.1.
-Also the newest cuda-convnet3 is only supported by Torch's ccn2.torch module.
-The comparisons between frameworks are done with same cuDNN R5 and the GPU kernel analysis is done using cuDNN R5.1 with Torch7.
-The detailed environments are described on Table \ref{table_system} and \ref{table_software}.
+\section{Experimental Methodology}
+To see what is exactly happening under the hood, we conduct three experiments with AlexNet built by aforementioned five deep learning frameworks. First, we measure the execution time of the AlexNet model for each framework to compare their characteristics. Unlike previous work, we measure layer-wise and GPU kernel-wise execution times as well as the single batch execution time. Second, we obtain peformance characteristics of different convolution algorithms by profiling each GPU kernel implementation. Finally,
+we measure the training speed of each AlexNet implementation with multiple GPUs. Based on the experiment, we suggest possible optimization techniques to improve the scalability of the CNN model. 
 
 \begin{table}[]
 \centering
-\caption{System Hardward Setup}
+\caption{System Configuration}
 \label{table_system}
-\begin{tabular}{ll}
-Processor   & 2 x Intel Xeon E5 2650@2.0GHz \\
-GPU         & 4 x NVIDIA Titan X(GM200)     \\
-Main Memory & 128GB DDR3                    \\
-GPU Memory  & 4 x 12GB GDDR5                \\
-OS          & CentOS 7.2.1511               \\
-Kernel      & Linux 3.10.0-327             
+\begin{scriptsize}
+\begin{tabular}{|l|l|}
+\hline\hline
+CPU         & 2 x Intel Xeon E5 2650@2.0GHz \\\hline
+GPU         & 4 x NVIDIA Titan X (GM200)    \\\hline
+Main memory & 128GB DDR3                    \\\hline
+GPU memory  & 4 x 12GB GDDR5                \\\hline
+Operating system & CentOS 7.2.1511 (Linux 3.10.0-327)  \\\hline
 \end{tabular}
+\end{scriptsize}
 \end{table}
 
 \begin{table}[]
 \centering
-\caption{Software Setup}
+\caption{Framework Versions and Libraries Used}
 \label{table_software}
-\begin{tabular}{ll}
-CUDA 		& CUDA 7.5 \\
-cuDNN		& 5.1.3(Torch) \/ 5.0.5(others)     \\
-Cuda-convnet& ccn2.torch			\\
-Theano		& 0.8.2                    \\
-Torch		& 7                \\
-cudnn.torch	& R5		\\
-Tensorflow	& 0.10.0rc0     	\\
-Caffe		& 1.0.0-rc3			\\
-CNTK		& 1.7.2             
+\begin{scriptsize}
+\begin{tabular}{|l|l|l|}
+\hline\hline
+Name & Version & Libraries \\
+\hline
+Caffe		& 1.0.0-rc3		        &  cuDNN 5.0.5   \\\hline
+CNTK		& 1.7.2                         &  cuDNN 5.0.5    \\\hline
+Tensorflow	& 0.10.0rc0     	        &  cuDNN 5.0.5    \\\hline 
+Theano		& 0.8.2                         & Lasagne 0.2, cuDNN 5.0.5    \\\hline 
+Torch		& 7                             & cuDNN 5.1.3, ccn2.torch \\\hline
+CUDA 		& CUDA 7.5                      &    \\\hline 
+Cuda-convnet    & Cuda-convnet3			&    \\\hline 
 \end{tabular}
+\end{scriptsize}
 \end{table}
 
-\subsection{AlexNet model}
-AlexNet \cite{krizhevsky2012imagenet} is one of the earliest successful deep neural networks on image recognition task using ImageNet dataset.
-AlexNet uses 5 convolution layers to extract features and 3 fully connected layers for classification.
-Each layer has rectified linear unit(ReLU) layer for nonlinear activation.
-AlexNet has been frequently used for benchmarking performance of machine learning libraries, because it utilizes most of the current DNN components such as convolution, max-pooling and dropout \cite{convnet-benchmarks}.
-The original AlexNet model includes Local response normalization(LRN) layer, but we exclude it for benchmarking task since LRN is very rarely used in current convolutional neural networks.
-The detailed layer structure of AlexNet model on this study is presented in Table \ref{alex_model}.
+Our experiments are performed with a system described in Table~\ref{table_system}. The versions of the deep learning frameworks and libraries are described in Table~\ref{table_software}. Torch is currently the only framework that officially supports cuDNN R5.1. In addition, the newest cuda-convnet3 is supported only by the ccn2.torch module in Torch. The comparison between the frameworks are done with cuDNN R5, and GPU kernel analyses are performed using cuDNN R5.1 with Torch7.
 
-
-\begin{table*}[]
-\centering
-\caption{Alexnet model used on benchmarking}
-\label{alex_model}
-\begin{tabular}{llllllll}
-Name    & Kernel(R) & Input Channels(C) & Ouput Channels(K) & Stride(K) & Sample width(W) & Params & Flop \\
-Input   &           & 3                 &                   &           & 227 x 227       &        &      \\
-Conv1   & 11 x 11   & 3                 & 96                & 4         & 55 x 55         & 35K    & 55G  \\
-Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
-Conv2   & 5 x 5     & 96                & 256               & 1         & 27 x 27         & 614K   & 227G \\
-Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
-Conv3   & 3 x 3     & 256               & 384               & 1         & 13 x 13         & 885K   & 65G  \\
-Conv4   & 3 x 3     & 384               & 384               & 1         & 13 x 13         & 1.3M   & 98G  \\
-Conv5   & 3 x 3     & 384               & 256               & 1         & 13 x 13         & 885K   & 65G  \\
-Pool    & 3 x 3     &                   &                   & 2         &                 &        &      \\
-FC6     &           & 256 x 6 x 6       & 4096              &           &                 & 37M    & 74M  \\
-FC7     &           & 4096              & 4096              &           &                 & 16M    & 32M  \\
-FC8     &           & 4096              & 1000              &           &                 & 4M     & 8M   \\
-Softmax &           & 1000              & 1000              &           &                 &        &     
-\end{tabular}
-\end{table*}
+For comparison, AlexNet is trained for many iterations. We profile AlexNet during the training period. After it is stabilized, one batch iteration is selected for our analysis. Model parameters are carefully equalized across different frameworks to remove the effect from things other than the framework itself.

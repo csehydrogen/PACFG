@@ -1,42 +1,40 @@
 \section{Introduction}
 
-Deep neural networks (DNNs) have been very successful on various machine learning tasks, such as visual recognition\cite{krizhevsky2012imagenet,vgg,RCNN}, speech recognition\cite{speech}, and machine translation\cite{machinetranslation}.
-Among others, the convolutional neural network (CNN) proposed by LeCun \textit{et al.}\cite{726791}, is one of the earliest successful DNN models that were used to classify images.
-CNN models equipped with deep learning techniques (\textit{e.g.}, ReLU activation, dropout layers, data augumentation, etc.) outperform previous machine learining techniques in various visual recognition challenges, such as ILSVRC\cite{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14} and PASCAL\cite{pascal}.
-The classification accuracy of CNN models have been improving over time.
-In addition, recent state-of-the-art techniques for visual recognition use an ensemble of different CNN models\cite{ILSVRC15}.
-CNN models are also being applied to other machine learning tasks than image recognition.
-They can also be applied to action recognition\cite{actionrecognition}, speech recognition\cite{speech}, natural language processing\cite{DBLP:journals/corr/KalchbrennerGB14}, and playing Go\cite{alphago}.
+Deep neural networks (DNNs) have been very successful on various machine learning tasks, such as visual recognition\cite{krizhevsky2012imagenet,vgg,RCNN}, speech recognition\cite{speech}, and machine translation\cite{machinetranslation}. Among others, the convolutional neural network (CNN) proposed by LeCun \textit{et al.}\cite{726791}, is one of the earliest successful DNN models that were used to classify images. CNN models equipped with deep learning techniques (\textit{e.g.}, ReLU activation, dropout layers, data augumentation, etc.) outperform previous machine learining techniques in various visual recognition challenges, such as ILSVRC\cite{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14} and PASCAL\cite{pascal}.
 
-The biggest advantage of using DNN is its scalability.
-A larger and deeper DNN with more parameters usually results in a better accuracy.
-However, a larger DNN require more processing power, and training it using a typical computer is impractical.
-Fortunately, computations in a neural network can easily be represented as tensor or matrix operations that can be efficiently parallelized.
-Thus, GPUs' massively parallel processing power make DNNs to be trained efficiently even in a single desktop computer.
+%The classification accuracy of CNN models have been improving over time. In addition, recent state-of-the-art techniques for visual recognition use an ensemble of different CNN models\cite{ILSVRC15}. CNN models are also being applied to other machine learning tasks than image recognition. They can also be applied to action recognition\cite{actionrecognition}, speech recognition\cite{speech}, natural language processing\cite{DBLP:journals/corr/KalchbrennerGB14}, and playing Go\cite{alphago}.
+
+The biggest advantage of using a CNN is its scalability. A larger and deeper CNN with more parameters usually results in a better accuracy. However, a larger CNN requires more processing power, and training it using a typical computer is impractical. Fortunately, computations in a CNN can easily be represented as tensor or matrix operations that can be efficiently parallelized. Thus, GPUs' massively parallel processing power makes CNNs to be trained efficiently even in a single desktop computer.
+
 Since deep learning frameworks have been developed for the efficient and easy implementation of DNN models, most of popular deep learning frameworks support GPU acceleration by default\cite{DBLP:journals/corr/Al-RfouAAa16,jia2014caffe,tensorflow2015-whitepaper,torch,cntk}.
 As a result, companies and researchers have been trying to implement efficient GPU kernels to improve the performance of deep learning frameworks.
 
-The most popular deep learning library for such frameworks is cuDNN\cite{cudnn}.
-It has been developed by NVIDIA, and most of the popular deep learning frameworks use it as the backend for GPUs.
-For example, computing convolution with cuDNN results in up to 4X performance improvement compared with the default GPU kernels of the frameworks\cite{convnet-benchmarks}.
-Another approach to speed up CNNs is reducing the time complexity of convolution algorithms.
-Fast Fourier Transform (FFT) algorithms\cite{fftconv, fbfft} and Winograd's minimal filtering algorithm\cite{winograd} successfully reduce the time complexity of the convolution computation.
-However, while the efficiency of deep learning on a single GPU has been improved a lot, deep learning on multiple GPUs still shows poor scalability\cite{DBLP:journals/corr/YadanATR13}.
+The most popular deep learning library for such frameworks is cuDNN\cite{cudnn}. It has been developed by NVIDIA, and most of the popular deep learning frameworks use it as the backend for GPUs. An approach to speed up CNNs is reducing the time complexity of convolution algorithms.
+Fast Fourier Transform (FFT) algorithms\cite{fftconv, fbfft} and Winograd's minimal filtering algorithm\cite{winograd} successfully reduce the time complexity of the convolution computation in a CNN.
+However, while the efficiency of a CNN on a single GPU has been improved a lot, its efficiency on multiple GPUs still shows poor scalability\cite{DBLP:journals/corr/YadanATR13}.
 
-In this paper, we analyze the performance characteristics of CNNs on different deep learning frameworks and libraries.
-For clarity, a \textit{framework} refers to a full collection of libraries to build DNN models and a \textit{library} refers to a GPU kernel library such as cuDNN used for the framework.
-We choose five most popular deep learning frameworks, Caffe\cite{jia2014caffe}, CNTK\cite{cntk}, TensorFlow\cite{tensorflow2015-whitepaper}, Theano\cite{DBLP:journals/corr/Al-RfouAAa16}, and Torch\cite{torch}.
-The criterion for popularity is the number of github\cite{github} stars.
-We also choose a CNN model, AlexNet\cite{krizhevsky2012imagenet}, to obtain the performance characteristics from the frameworks and libraries.
-Identically structured AlexNet models are built and trained using these frameworks.
-All the five frameworks use cuDNN as the GPU backend.
-Cuda-convnet\cite{cuda-convnet} developed by Alex Krizhevsky is another GPU library used in this paper.
-In addition, we compare three different convolution algorithms of cuDNN with the direct convolution algorithm of cuda-convnet.
+Users choose a deep learning framework to build their CNN model based on language interfaces, operating system support, ease of use, etc. Ideally, the execution time of the same CNN model should be the same across all the frameworks when the input is the same. However, in reality, this is not true; a CNN model built with a framework delivers more than twice the performance compared to the same model built with a different framework\cite{DBLP:journals/corr/BahrampourRSS15,DBLP:journals/corr/ShiWXC16}. 
 
-The contributions of this work can be divided into three parts.
-First, we analyze differences in the performance characteristics of the frameworks.
-We identify performance limiting factors of each framework and describe pros and cons of using each deep learning framework for propspective users.
-The performance limiting factors would also be helpful to optimizing the frameworks.
-Second, we obtain the performance characteristics of different convolution algorithms.
-Based on the result of analyzing the charateristics, we provide possible optimization techniques to implement efficient CNN models using the libraries.
-Finally, we obtain the performance characteristics of the frameworks in multi-GPU contexts. We also provide possible techniques to improve the scalability of the frameworks when using multiple GPUs.
+In this paper, we analyze the performance characteristics of CNNs built with different deep learning frameworks and libraries. For clarity, a \textit{framework} refers to a full collection of libraries to build DNN models and a \textit{library} refers to a GPU kernel library such as cuDNN used for the framework. We choose five most popular deep learning frameworks, Caffe\cite{jia2014caffe}, CNTK\cite{cntk}, TensorFlow\cite{tensorflow2015-whitepaper}, Theano\cite{DBLP:journals/corr/Al-RfouAAa16}, and Torch\cite{torch}.
+The criterion for the popularity is the number of github stars\cite{github}.
+
+We choose a representative CNN model, AlexNet\cite{krizhevsky2012imagenet}, to compare the five frameworks and to obtain the performance characteristics from the frameworks and libraries. Identically structured AlexNet models are built and trained using different frameworks. All the five frameworks use cuDNN as the GPU backend. Cuda-convnet\cite{cuda-convnet} is another GPU library used with those frameworks. In addition, we compare three different convolution algorithms of cuDNN with the direct convolution algorithm of cuda-convnet.
+
+Our comparative study provides useful insights to both end users of a DNN framework and developers of the framework. In the case of end users, their main interest is the accuracy and speed of the network in training and testing, not the optimization of the implementation of the DNN. They sometimes do not know that their model built with the DNN framework is slower than those with other frameworks. Moreover, they do not know the reasons of slowdown either. On the other hand, the developers of the DNN frameworks want to know where the bottlenecks occur to optimize their framework implementations. They want to improve the performance of the DNN model built by their framework.
+
+We identify which part of the GPU implementation of a framework is the performance bottleneck. This provides the developers with optimization possibilities. This will also help end users to choose a proper framework for their CNN models. Based on the observation, we increase the speed of training a CNN model up to twice by changing options in the framework compared to the same model built with default options. We do not modify the source code of the framework. Thus, the end users can easily adopt our techniques to their CNN model building processes.
+
+The contributions of this work are as follows:
+\begin{itemize}
+\item We analyze differences in the performance characteristics of the five frameworks in a single GPU context. Unlike previous approaches, we measure layer-wise and kernel-wise execution times as well as the execution time of a mini-batch. 
+
+\item We identify performance limiting factors of each framework and describe pros and cons of using it for propspective users. The performance limiting factors would also be helpful to optimizing the frameworks.
+
+\item We show the performance characteristics of different convolution algorithms. Based on the charateristics, we provide possible optimization techniques to implement efficient CNN models using the algorithm libraries.
+
+\item We show the performance characteristics of the deep learning frameworks in multi-GPU contexts. We also provide possible techniques to improve the scalability of the frameworks when using multiple GPUs.
+\end{itemize}
+
+
+
+
