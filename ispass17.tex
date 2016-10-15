@@ -8,9 +8,11 @@
 \usepackage{algorithmic}
 \hyphenation{op-tical net-works semi-conduc-tor}
 
-\newcommand{\Comment}[1]{\textbf{#1}}
-
-
+\newcommand{\Comment}[1]{}
+\setlength{\textfloatsep}{4pt plus 2pt minus 2pt}
+\setlength{\floatsep}{4pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{4pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{4pt plus 2pt minus 2pt}
 \begin{document}
 
 \title{Performance Analysis of CNN Frameworks\\
@@ -36,6 +38,7 @@
 
 \IEEEpeerreviewmaketitle
 
+\renewcommand{\baselinestretch}{.95} 
 \input{introduction}
 \input{related}
 \input{experiments}
@@ -51,6 +54,6 @@
 
 \bibliographystyle{IEEEtran}
 \bibliography{IEEEabrv,ispass17}
-\nocite{*}
+%\nocite{*}
 
 \end{document}
