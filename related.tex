@@ -12,12 +12,12 @@ Caffe      & BVLC & Supported & Data           & Linux & protobuf, Python, MATLA
 CNTK       & Microsoft   & Supported & Data           & Windows, Linux & BrainScript, C++, C\#\\
 TensorFlow & Google      & Supported & Data, Model    & Linux & Python, C++\\
 Theano     & Theano Development Team  & Supported & None  & Linux & Python \\
-Torch      &    & Supported & Data, Model  & Linux & LuaJIT \\  
+Torch      & Torch Development Team   & Supported & Data, Model  & Linux & LuaJIT \\  
 \hline      
 \end{tabular}
 \end{small}
 \end{table*}
-
+%added torch development team
 \section{Background and Related work}
 In this section, we briefly describe the five major deep learning frameworks and a typical organization of CNNs. We also introduces some related work about comparative studies of deep learning frameworks.
 
@@ -112,9 +112,9 @@ conv3         & 3 x 3 / 1    & 384 x 13 x 13    & 885K   & 65G  \\
 conv4         & 3 x 3 / 1    & 384 x 13 x 13    & 1.3M   & 98G  \\
 conv5         & 3 x 3 / 1    & 256 x 13 x 13    & 885K   & 65G  \\
 pool3         & 3 x 3 / 2    & 256 x 6 x 6      &        &      \\
-fc6           &              & 4096             & 37M    & 74M  \\
-fc7           &              & 4096             & 16M    & 32M  \\
-fc8           &              & 1000             & 4M     & 8M   \\
+fc1           &              & 4096             & 37M    & 74M  \\
+fc2           &              & 4096             & 16M    & 32M  \\
+fc3           &              & 1000             & 4M     & 8M   \\
 softmax       &              & 1000             &        &      \\ 
 \hline 
 \end{tabular}
@@ -146,7 +146,7 @@ AlexNet has been frequently used for benchmarking deep learning libraries becaus
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.5\linewidth]{./figures/direct}
+  \includegraphics[width=\linewidth]{./figures/direct}
   \caption{Direct convolution computation vs. matrix multiplication.}
   \label{fig_direct}
 \end{figure}

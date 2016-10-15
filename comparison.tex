@@ -18,9 +18,9 @@ In this section, we characterize the five deep learning frameworks on a single G
 
 {\bf TensorFlow}. TensorFlow also does not provide options for GPU kernel choices. Unlike Caffe, however, it executes all available algorithms in the first run by itself. Then, the fastest GPU kernel in each layer is executed in subsequent runs. The FFT algorithm is chosen for all the convolution layers except the first layer, where FFT cannot be used because of the stride size (4). Since the set of algorithms that can be chosen is fixed and hardwired, a recently added option WINOGRAD\_NONFUSED cannot be included in the set.
 
-{\bf Theano}. On the other hand, Theano provides full accesses on the GPU kernel choices. Users can specify a specific convolution algorithm globally or in a layer-by-layer manner. There are two types of GPU GEMM kernels in Theano: explicit and implicit. The default is the explicit GEMM. When a global convolution algorithm is given, and the GPU kernel for the algorithm does not match the condition for a layer specified by Theano, the implicit GEMM is chosen as a fallback for the layer. However, the implicit GEMM is usually slower than the explicit GEMM. Thus, it is better to give layerwise option to avoid choosing the implicit GEMM. \Comment{$<$==== Check this! ===} 
+{\bf Theano}. On the other hand, Theano provides full accesses on the GPU kernel choices. Users can specify a specific convolution algorithm globally or in a layer-by-layer manner. \Comment{There are two types of GPU GEMM kernels in cuDNN: explicit and implicit. Theano selects the explicit GEMM by default.} When a global convolution algorithm is given, and the GPU kernel for the algorithm does not match the condition for a layer specified by Theano, the implicit GEMM is chosen as a fallback for the layer. However, the implicit GEMM is usually slower than the explicit GEMM. Thus, it is better to give layerwise option to avoid choosing the implicit GEMM.
 
-This is the reason why the first layer of \textsf{Theano (FFT)} in Figure~\ref{fig_time_frameworks} is slower than \textsf{Theano (guess\_once)}, \textsf{Theano (time\_once)}, and even \textsf{Theano}. The \textsf{guess\_once} option makes Theano behaves like Caffe where cuDNN's heuristics determine the best suited algorithm. Unlike Caffe, it properly exploits cuDNN's heuristics when the \textsf{guess\_once} option is given\Comment{$<$==== Check this! ===} 
+This is the reason why the first layer of \textsf{Theano (FFT)} in Figure~\ref{fig_time_frameworks} is slower than \textsf{Theano (quess\_once)}, \textsf{Theano (time\_once)}, and even \textsf{Theano}. The \textsf{guess\_once} option makes Theano behaves like Caffe where cuDNN's heuristics determine the best suited algorithm. Unlike Caffe, it properly exploits cuDNN's heuristics when the \textsf{guess\_once} option is given 
 
 The \textsf{time\_once} option in Theano exploits cuDNN's another functionality that executes all available convolution algorithms and choose the fastest one. Unlike TensorFlow, the set of algorithms is not hardwired. Instead, Theano directly uses cuDNN's API functions.
 
@@ -34,33 +34,36 @@ This implies that cuDNN's heuristics are quite reliable.
 \begin{scriptsize}
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline\hline
-GPU kernel & Caffe    & CNTK & TensorFlow & Theano  & Torch \\ \hline\hline
-Bias       & cuDNN    &      & TensorFlow & Theano  & cuDNN \\ \cline{2-6} 
-addition   & 2.64 ms  &      & 2.84 ms    & 7.88 ms & 2.63 ms  \\ \hline\hline
-ReLU       & cuDNN    &      & Eigen      & Theano  & cuDNN \\ \cline{2-6}
-activation & 2.56 ms  &      & 2.43 ms    & 4.59 ms & 2.56 ms  \\ \hline
+GPU kernel & Caffe    & CNTK    & TensorFlow & Theano  & Torch \\ \hline\hline
+Bias       & cuDNN    & CNTK    & TensorFlow & Theano  & cuDNN \\ \cline{2-6} 
+addition   & 2.64 ms  & 4.74 ms & 2.84 ms    & 7.88 ms & 2.63 ms  \\ \hline\hline
+ReLU       & cuDNN    & CNTK    & Eigen      & Theano  & cuDNN \\ \cline{2-6}
+activation & 2.56 ms  & 2.26 ms & 2.43 ms    & 4.59 ms & 2.56 ms  \\ \hline
 \end{tabular}
 \end{scriptsize}
 \end{table}
 
-Although Theano executes the fastest GPU kernels for convolution computation, it does have the fastest convolution layers because of other GPU kernels for bias addition and ReLU activation. Table~\ref{table_misc_kernel} lists the GPU kernels included in a convolution layer, but not directly participates in convolution computation. It also shows the source of the GPU kernels. The execution time of the GPU kernels is measured in the first convolution layer. Since Theano uses GPU kernels that are dynamically compiled at run time, they are noticeably slower than those in other frameworks.
+Although Theano executes the fastest GPU kernels for convolution computation, it does have the fastest convolution layers because of other GPU kernels for bias addition and ReLU activation. Table~\ref{table_misc_kernel} lists the GPU kernels included in a convolution layer, but not directly participates in convolution computation. It also shows the source of the GPU kernels. The execution time of the GPU kernels is measured in the first convolution layer. \Comment{Theano uses GPU kernels that are dynamically compiled at run time, and they are noticeably slower than those in other frameworks.}
 
 {\bf Torch}. Like Theano, Torch provides a full control over GPU kernel choices. Its cuDNN backend, cudnn.torch, has \textsf{cudnn.benchmark} option that is the same as \textsf{time\_once} in Theano. When \textsf{benchmark} option is on, Torch is the fastest. 
 
+\Comment{{\bf CNTK} CNTK does not provide any options for GPU kernel choices. Instead, CNTK uses cuDNN's functionality to choose the fastest kernel by executing all convolution algorithms, like Theano and Torch did. CNTK is not the fastest though, since it uses slow kernels from itself for bias addition.}
+
 \subsection{Effect of Data Layout}
 We also find that data layout affects performance a lot. The most noticable one is the tensor format.
-Caffe, Theano, and Torch use the $NCHW$ 4D tensor format mentioned in Section~\ref{sec:CNN}. When $N$, $C$, $H$, and $W$ are the number of images in a batch, the number of channels, the height of a feature map, and the width of a feature map, respectively, the $NCHW$ 4D tensor data are stored in the order of the dimensions $N$, $C$, $H$, and $W$. 
+Caffe, Theano, and Torch use the $NCHW$ 4D tensor format mentioned in Section~\ref{sec-CNN}. When $N$, $C$, $H$, and $W$ are the number of images in a batch, the number of channels, the height of a feature map, and the width of a feature map, respectively, the $NCHW$ 4D tensor data are stored in the order of the dimensions $N$, $C$, $H$, and $W$. 
 
 Even though TensorFlow supports the $NCHW$ format, it seems to prefer the $NHWC$ format. Sample code in TensorFlow uses the $NHWC$ format, and many functions in TensorFlow, such as conv2d, uses it as a default argument. Since channel data are stored in the last dimension in the $NHWC$ format, the performance will be better off using it when there are innermost channel-wise operations. However, some convolution kernels, such as FFT, in cuDNN supports only $NCHW$ format. Moreover, by default, TensorFlow performs conversion between $NHWC$ and $NCHW$ even if it uses GPU kernels that support the $NHWC$ format. Thus, using the $NHWC$ tensor format introduces significant conversion overhead before and after a convolution. In Figure~\ref{fig_time_frameworks}, just changing the tensor format from $NHWC$ to $NCHW$ leads to about 15\% performance improvement. 
 
-\subsection{Redundant Backward Propagation}
-The first convolution layer in AlexNet does not have its previous layer. Thus, there is no need to perform the back propagation of gradients computed in the first layer. Caffe and Theano automatically omit the back propagation. Torch omits it when \textsf{gradInput} of the first layer is set to nil. \Comment{$<$=== Check this! ===}
+\subsection{Useless Backward Propagation}
+The first convolution layer in AlexNet does not have its previous layer. Thus, there is no need to perform the back propagation of gradients computed in the first layer. Caffe and Theano automatically omit the back propagation. Torch omits it when \textsf{gradInput} of the first layer is set to nil.
 
-On the contrary, TensorFlow always perform the back propagaton of the first layer to prevent non-reproducibility caused by race conditions (gate\_gradients parameter in tf.train.Optimizer.compute\_gradients). This makes TensorFlow slower than Torch even if Torch has almost the same GPU kernels as those of TensorFlow. For this reason, in Figure~\ref{fig_time_frameworks}, we see that the execution time of \textsf{conv1b} in \textsf{TensorFlow (NCHW)} is significantly different from that in \textsf{Torch (benchmark)}. \Comment{$<$==== Check it! ===} 
+On the contrary, TensorFlow always perform the back propagaton of the first layer to prevent non-reproducibility caused by race conditions (gate\_gradients parameter in tf.train.Optimizer.compute\_gradients). This makes TensorFlow slower than Torch even if Torch has almost the same GPU kernels as those of TensorFlow. For this reason, in Figure~\ref{fig_time_frameworks}, we see that the execution time of \textsf{conv1b} in \textsf{TensorFlow (NCHW)} is significantly different from that in \textsf{Torch (benchmark)}.
 
 However, it can be disabled at the expense of reproducibility and the accuracy of gradient computation, although we left it enabled in our experiment for Figure~\ref{fig_time_frameworks}.
 
-Based on the above observations, we can increase the speed of training a CNN model up to twice by just changing options in a framework. We do not need to modify the source code of the framework at all. For example, \textsf{Theano (FFT)}, \textsf{Theano (guess\_once)}, and \textsf{Theano (time\_once)} are twice faster than \textsf{Theano}, \textsf{Torch (FFT)} and \textsf{Torch (benchmark)} are also twice faster than \textsf{Torch}. 
+\subsection{Summary}
+\Comment{We observed that slight changes in framework options resulted in large performance difference. Options for kernel choices, data layout, and disabling useless backward propagtion were the most influential.} We could increase the speed of training a CNN model up to twice by just changing options in a framework. We do not need to modify the source code of the framework at all. For example, \textsf{Theano (FFT)}, \textsf{Theano (guess\_once)}, and \textsf{Theano (time\_once)} are twice faster than \textsf{Theano}. \textsf{Torch (benchmark)} are also twice faster than \textsf{Torch}.
 
 %그 외 사소한 것으로 텐서에 네트워크 입력을 feed_dict로 주면 CPU 복사가 일어나서 매우 느리므로 FixedLengthRecordReader 등으로 주는게 좋다.
 %https://github.com/tensorflow/tensorflow/issues/2919
