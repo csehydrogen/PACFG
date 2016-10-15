@@ -1,8 +1,7 @@
 \section{Experimental Methodology}
-To see what is exactly happening under the hood, we conduct three experiments with AlexNet built by aforementioned five deep learning frameworks. First, we measure the execution time of the AlexNet model for each framework to compare their characteristics. Unlike previous work, we measure layer-wise and GPU kernel-wise execution times as well as the single batch execution time. Second, we obtain peformance characteristics of different convolution algorithms by profiling each GPU kernel implementation. Finally,
-we measure the training speed of each AlexNet implementation with multiple GPUs. Based on the experiment, we suggest possible optimization techniques to improve the scalability of the CNN model. 
+To see what is exactly happening under the hood, we conduct three experiments with AlexNet models built by aforementioned five deep learning frameworks. First, we measure the execution time of the AlexNet model for each framework to compare their characteristics. Unlike previous work, we measure layer-wise and GPU kernel-wise execution times as well as the execution time of a single batch. Second, we obtain performance characteristics of different convolution algorithms by profiling each GPU kernel implementation. Finally, we measure the training speed of each AlexNet implementation with multiple GPUs. Based on the experiment, we suggest possible optimization techniques to improve the scalability of CNNs. 
 
-\begin{table}[]
+\begin{table}[htbp]
 \centering
 \caption{System Configuration}
 \label{table_system}
@@ -18,26 +17,6 @@ Operating system & CentOS 7.2.1511 (Linux 3.10.0-327)  \\\hline
 \end{scriptsize}
 \end{table}
 
-\begin{table}[]
-\centering
-\caption{Framework Versions and Libraries Used}
-\label{table_software}
-\begin{scriptsize}
-\begin{tabular}{|l|l|l|}
-\hline\hline
-Name & Version & Libraries \\
-\hline
-Caffe		& 1.0.0-rc3		        &  cuDNN 5.0.5   \\\hline
-CNTK		& 1.7.2                         &  cuDNN 5.0.5    \\\hline
-Tensorflow	& 0.10.0rc0     	        &  cuDNN 5.0.5    \\\hline 
-Theano		& 0.8.2                         & Lasagne 0.2, cuDNN 5.0.5    \\\hline 
-Torch		& 7                             & cuDNN 5.1.3, ccn2.torch \\\hline
-CUDA 		& CUDA 7.5                      &    \\\hline 
-Cuda-convnet    & Cuda-convnet3			&    \\\hline 
-\end{tabular}
-\end{scriptsize}
-\end{table}
+Our experiments are performed with a system described in Table~\ref{table_system}. The versions of the deep learning frameworks and libraries used are described in Table~\ref{table_framework}. Torch is currently the only framework that officially supports cuDNN R5.1. In addition, the newest cuda-convnet3 is supported only by the ccn2.torch module in Torch. The comparison between the frameworks is done with cuDNN R5 and the comparison between different convolution algorithms is performed using cuDNN R5.1 with Torch7.
 
-Our experiments are performed with a system described in Table~\ref{table_system}. The versions of the deep learning frameworks and libraries are described in Table~\ref{table_software}. Torch is currently the only framework that officially supports cuDNN R5.1. In addition, the newest cuda-convnet3 is supported only by the ccn2.torch module in Torch. The comparison between the frameworks are done with cuDNN R5, and GPU kernel analyses are performed using cuDNN R5.1 with Torch7.
-
-For comparison, AlexNet is trained for many iterations. We profile AlexNet during the training period. After it is stabilized, one batch iteration is selected for our analysis. Model parameters are carefully equalized across different frameworks to remove the effect from things other than the framework itself.
+AlexNet models are trained for many iterations and profiled. After they are stabilized, an iteration for a single batch is selected for our analysis. Model parameters are carefully equalized across different frameworks to remove the effect from things other than the frameworks themselves.
