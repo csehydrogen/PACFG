@@ -17,6 +17,6 @@ Operating system & CentOS 7.2.1511 (Linux 3.10.0-327)  \\\hline
 \end{scriptsize}
 \end{table}
 
-Our experiments are performed with a system described in Table~\ref{table_system}. The versions of the deep learning frameworks and libraries used are described in Table~\ref{table_framework}. Torch is currently the only framework that officially supports cuDNN R5.1. In addition, the newest cuda-convnet3 is supported only by the ccn2.torch module in Torch. The comparison between the frameworks is done with cuDNN R5 and the comparison between different convolution algorithms is performed using cuDNN R5.1 with Torch7.
+Our experiments are performed with a system described in Table~\ref{table_system}. The versions of the deep learning frameworks and libraries used are described in Table~\ref{table_framework}. Torch is currently the only framework that officially supports cuDNN R5.1. In addition, the newest Cuda-convnet3 is supported only by the ccn2.torch module in Torch. The comparison between the frameworks is done with cuDNN R5 and the comparison between different convolution algorithms is performed using cuDNN R5.1 with Torch7.
 
 AlexNet models are trained for many iterations and profiled. After they are stabilized, an iteration for a single batch is selected for our analysis. Model parameters are carefully equalized across different frameworks to remove the effect from things other than the frameworks themselves.

@@ -6,18 +6,6 @@ To exploit data parallelism, a GPU (say $GPU_0$) gathers intermediate gradient v
 
 Ideally, the training time of AlexNet is expected to be reduced to $\frac{1}{N}$ when $N$ GPUs are used. However, this is not true because of the data transfer caused by the gradient data exchange. Since the size of the gradient data in our AlexNet model is about 250MB, the gradient transfer between two GPUs takes about 45ms. This is not negligible considering that one forward and backward computation takes about 200ms with a batch size of 256.
 
-\begin{figure*}[htbp]
-  \centering
-  \includegraphics[width=.9\linewidth]{./figures/MG}
-  \subfloat[Caffe]{\makebox[.19\linewidth][]{}}
-  \subfloat[Torch]{\makebox[.19\linewidth][]{}}
-  \subfloat[TensorFlow]{\makebox[.18\linewidth][]{}}
-  \subfloat[CNTK]{\makebox[.18\linewidth][]{}}
-  \subfloat[CNTK 1bit-SGD]{\makebox[.18\linewidth][]{}}
-\caption{Speedup (over a single GPU) of multi-GPU training of the AlexNet models.}
-\label{fig_mg}
-\end{figure*}
-
 Figure~\ref{fig_mg} shows the speedup obtained by multi-GPU training of our AlexNet models with different batch sizes and numbers of GPUs. We see that a bigger batch size makes the speedup higher. A batch size of 128 makes Caffe and Torch on two or four GPUs much slower than on a single GPU. A bigger batch size makes the computation time in each GPU longer. However, the number and size of data transfer is fixed because the number of network parameters remains the same. Thus, it is beneficial to use a bigger batch size.
 
 We also see that the scalability of each framework is quite poor. The speedup of using four GPUs is slower than or comparable to that of using two GPUs for all frameworks. The reason is, gradient transfer when using four GPUs still takes twice longer than using two GPUs, even though we use the $O(log N)$ algorithm to transfer data between GPUs.

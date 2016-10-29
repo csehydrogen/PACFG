@@ -44,9 +44,21 @@ Figure~\ref{fig_gpu_mem} shows peak GPU memory usage for each convolution algori
   \label{fig_layerwise}
 \end{figure}
 
+\begin{figure*}[htbp]
+  \centering
+  \includegraphics[width=.9\linewidth]{./figures/MG}
+  \subfloat[Caffe]{\makebox[.19\linewidth][]{}}
+  \subfloat[Torch]{\makebox[.19\linewidth][]{}}
+  \subfloat[TensorFlow]{\makebox[.18\linewidth][]{}}
+  \subfloat[CNTK]{\makebox[.18\linewidth][]{}}
+  \subfloat[CNTK 1bit-SGD]{\makebox[.18\linewidth][]{}}
+\caption{Speedup (over a single GPU) of multi-GPU training of the AlexNet models.}
+\label{fig_mg}
+\end{figure*}
+
 \subsection{Layer-wise Analysis}
 
-Figure~\ref{fig_layerwise} shows layer-wise analysis of different convolution algorithms on a single GPU. The batch size is set to 256, and the NVIDIA nvprof profiler is used to gather statistics. As shown in Figure~\ref{fig_layerwise_bd}, the main performance limiter of \textsf{Direct} (\textit{i.e.},cuda-convnet3) is the backward computation in \textsf{conv1} layer. The reason of the slowdown is low parallelism in \textsf{Direct} that implement \textsf{conv1} layer. While NVIDIA Titan X has 3072 CUDA cores, the number of CUDA threads in the implementation is only 1024. This makes \textsf{Direct} slower than other algorithms in \textsf{conv1}. 
+Figure~\ref{fig_layerwise} shows layer-wise analysis of different convolution algorithms on a single GPU. The batch size is set to 256, and the NVIDIA nvprof profiler is used to gather statistics. \textsf{FFT} and \textsf{Winograd} cannot be applied to the \textsf{conv1} since it has a stride size of 4. As shown in Figure~\ref{fig_layerwise_bd}, the main performance limiter of \textsf{Direct} (\textit{i.e.},cuda-convnet3) is the backward computation in \textsf{conv1} layer. The reason of the slowdown is low parallelism in \textsf{Direct} that implement \textsf{conv1} layer. While NVIDIA Titan X has 3072 CUDA cores, the number of CUDA threads in the implementation is only 1024. This makes \textsf{Direct} slower than other algorithms in \textsf{conv1}. 
 
 %{\bf Backward and forward convolutions}. The backpropagation in a convolution layer requires two convolutions: backward data convolution (\textsf{BDC}) and backward filter convolution (\textsf{BFC}). \textsf{BDC} generates gradient input to the previous layer while \textsf{BFC} updates the parameters of the current layer. Since backpropagation requires two convolutions, the backward computation time should be double the forward computation time. Moreover, the backward computation is more memory intensive than the forward computation because \textsf{BFC} needs to update the network parameters.
 
