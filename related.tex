@@ -34,7 +34,6 @@ A convolution is an operation between two functions. Its value shows the degree 
 \end{equation}
 The convolution operation can be extended to multiple dimensions. A two-dimensional (2D) convolution between filter (a.k.a. kernel) $F[r][s] \; (0 \leq r \leq R-1, 0 \leq s \leq S-1)$ and data $D[h][w] \; (0 \leq h \leq H-1, 0 \leq w \leq W-1)$ can be described with the following equation:
 \begin{equation}
-\label{def_2d}
 \left ( D * F \right )[h][w] = \sum_{r=0}^{R-1}\sum_{s=0}^{S-1} D[h + r][w + s] F[r][s]
 \label{2d-conv}
 \end{equation}
