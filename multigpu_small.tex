@@ -1,0 +1,5 @@
+\section{Multi-GPU Support}
+\label{multi-GPU}
+In this section, we characterize the performance of the AlexNet models on multiple GPUs. The AlexNet models are trained on one, two, and four GPUs. Ideally, the training time of AlexNet is expected to be reduced to $\frac{1}{N}$ when $N$ GPUs are used. However, this is not true because of the data transfer caused by the gradient data exchange. Figure~\ref{fig_mg} shows the speedup obtained by multi-GPU training of our AlexNet models with different batch sizes and numbers of GPUs. We see that a bigger batch size makes the speedup higher. We also see that the scalability of each framework is quite poor. 
+
+TensorFlow-like data transfer and computation overlapping will be helpful to improve the performance. Reducing the size of gradients by approximating the exact value with less accuracy (\textit{e.g.}, using the half-precision FP format or only 1-bit like CNTK) will also improve scalability a lot. Reducing the number of gradients by resizing and pruning the CNN model will also work.

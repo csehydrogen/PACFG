@@ -1,0 +1,31 @@
+
+\section{Background and Related work}
+
+ 
+
+\subsection{Convolutional Neural Networks}
+\label{sec:CNN}
+A \textit{convolutional neural network} (CNN) is an artificial neural network using convolutional filters to extract features from its input. In a CNN, a layer that performs 2D convolutions is called a \textit{convolutional layer}. Since a filter extracts a feature from the input image, a typical convolution layer extracts multiple features from an input image using $N (\geq 1)$ filters, resulting in $N$ feature maps. Each of the feature maps is also called a \textit{channel}. The training stage of the CNN makes it learn a filter for each of the features.
+
+{\bf AlexNet}. Figure~\ref{fig_Alex} shows a representative CNN, AlexNet\cite{krizhevsky2012imagenet}. It is one of the earliest successful CNNs that perform image recognition tasks using the ImageNet dataset\cite{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14}. It uses five convolution layers (\textsf{conv1}, \textsf{conv2}, \textsf{conv3}, \textsf{conv4}, and \textsf{conv5}) and three max pooling layers (\textsf{pool1}, \textsf{pool2}, and \textsf{pool3}) to extract features. In addition, there are three fully connected layers (\textsf{fc1}, \textsf{fc2}, and \textsf{fc3}) for image classification. Each layer uses the rectified linear unit (ReLU) for nonlinear neuron activation. 
+
+
+
+\subsection{Convolution Algorithms}
+\label{sec:algorithms}
+{\bf Direct convolution}. Since the efficiency of computing a convolution is important to CNNs, several methods have been developed to efficiently implement the convolution operation. Directly computing the convolution (we call it \textit{direct convolution} in this paper) using Equation~\ref{2d-conv} is the most straightforward way to perform convolution.
+
+{\bf Using matrix multiplication}. cuDNN\cite{cudnn}, a DNN library from NVIDIA, treats the convolution as matrix multiplication (\textit{e.g.}, GEMM\cite{cublas}). Figure~\ref{fig_matmul} illustrates the process. It convolves a $5 \times 5$ image with two $2 \times 2$ kernels and obtains two $5 \times 5$ feature maps. Since the complexity of the matrix multiplication is $O(K \times CRS \times WH)$, when the number of images in a batch is $N$, the complexity becomes $O(K \times CRS \times NWH)$. 
+
+{\bf Using FFT}. The convolution operation can be implemented using a fast Fourier transform (FFT) algorithm to reduce computational complexity\cite{fftconv}. The complexity of FFT convolution is $O(K \times CWW \times \log W)$ that does not depend on the kernel size, $R \times S$. However, it requires more memory space because filters need to be padded to the dimension of the input. 
+
+{\bf Using the Winograd algorithm}. Winograd convolution is based on GEMM\cite{cublas}. It reduces the complexity using Winograd's minimal filtering algorithm\cite{winograd}.  It reduces multiplication operations significantly when the kernel size is fixed. Thus, a different kernel size requires a different minimal filtering algorithm. 
+
+\subsection{Multi-GPU Support}
+\label{sec:multiGPU-parallelism}
+Multi-GPU support for DNNs can be implemented by exploiting \textit{data parallelism} or \textit{model parallelism}\cite{NIPS2012_4687}. The communication cost in data parallelism depends on the number of network parameters. Since AlexNet has 62M parameters and their size is 250MB, each iteration (an iteration processes a batch) needs to transfer approximately 250MB of data per GPU. 
+
+TensorFlow and Torch support both data parallelism and model parallelism. While Caffe and CNTK support only data parallelism, the multi-GPU support of Theano is still in an experimental stage. Thus, we compare only the efficiency of data parallelism between Caffe, TensorFlow, Torch and CNTK for multiple GPUs. 
+
+\subsection{Related Work}
+Recently, some comparative studies for the deep learning frameworks are performed by Bahrampour \textit{et al.}\cite{DBLP:journals/corr/BahrampourRSS15} and Shi \textit{et al.}\cite{DBLP:journals/corr/ShiWXC16}. However, they show only the entire execution times of various DNN models built by the deep learning frameworks. They do not identify performance bottlenecks and reasons for performance differences. 
