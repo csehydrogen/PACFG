@@ -123,6 +123,7 @@ Convolution layers act as feature extractors while fully connected layers act as
 Although AlexNet is old and most state-of-the-art CNN applications do not use AlexNet model, it has been frequently used for benchmarking purpose because it contains most of contemporary CNN components.
 On the other hand, other frequently used CNN models such as GoogLeNet and VGGNet lack some components in AlexNet. GoogLeNet \cite{googlenet} do not use fully connected layer in order to reduce parameters. VGGNet use only 3x3 kernels for convolution layers while AlexNet use 5x5 and 11x11 kernels as well.
 Layer-wise performance analysis of AlexNet provides sufficient information to predict performance behavior of other CNN applications.
+\Comment{$<$=== Check it! ===}
 
 The detailed configuration of the AlexNet model in this paper is presented in Table~\ref{alex_model}. The original AlexNet model includes local response normalization (LRN) layers, but we exclude them in this paper since LRN is very rarely used in current CNN applications. 
 
