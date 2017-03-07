@@ -1,2 +1,16 @@
 \section{Conclusions and Future work}
-In this study, we characterize deep learning frameworks and libraries to build CNN models using the AlexNet model trained on a single GPU and multiple GPUs. The performance characteristics indicate that difference between the frameworks are mainly caused by convolution algorithms in the convolution layers. By just adjusting options provided by the frameworks, we achieve about 2X speedup without modifying any source code. Thus, providing options for convolution algorithm choices would be an important criterion to determine a deep learning framework to use. We also find that data layout and disabling useless backpropagation also affect the performance a lot. Using FFT and the Winograd algorithm in convolution is more beneficial than using direct computation and matrix multiplication. Carefully choosing a convolution algorithm can make a CNN model more than 4X faster in convolution layers. Our multi-GPU analysis indicates that the scalability of data parallelism in CNN models is bounded by the data transfer overhead of network parameters between GPUs. Thus, reducing the amount of parameter transfer would achieve better scalability when exploiting data parallelism. We also observe that the current multi-GPU scalabilities of the frameworks have much room to be improved.
+In this study, we characterize deep learning frameworks and libraries to build CNN models using the AlexNet model trained on a single GPU and multiple GPUs.
+Previous studies, such as \cite{DBLP:journals/corr/RussakovskyDSKSMHKKBBF14} and \cite{convnet-benchmarks}, address performance differences are caused by framework differences.
+However, the performance characteristics indicate that difference between the frameworks are mainly caused by backends, especially convolution algorithms in the convolution layers.
+By just adjusting options provided by the frameworks, we achieve about 2X speedup without modifying any source code.
+Thus, providing options for convolution algorithm choices would be an important criterion to determine a deep learning framework to use.
+We also find that data layout and disabling useless backpropagation also affect the performance a lot.
+Using FFT and the Winograd algorithm in convolution is more beneficial than using direct computation and matrix multiplication.
+Carefully choosing a convolution algorithm can make a CNN model more than 4X faster in convolution layers.
+Our multi-GPU analysis indicates that the scalability of data parallelism in CNN models is bounded by the data transfer overhead of network parameters between GPUs.
+Thus, reducing the amount of parameter transfer would achieve better scalability when exploiting data parallelism.
+We also observe that the current multi-GPU scalabilities of the frameworks have much room to be improved.
+Unlike the single-GPU context, framework differences are more important in the multi-GPU context since the frameworks choose different approaches for parallelization.
+
+We are also interested in a recurrent neural network (RNN), which is mainly composed of fully connected layers and expected to have different characteristics.
+Analyzing the characteristics of RNN is one of our future research topics.

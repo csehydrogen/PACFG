@@ -15,7 +15,8 @@
 
 \section{Characterization of Convolution Algorithms}
 \label{convolution-algorithms}
-In this section, we compare the performance of different convolution algorithms on a single GPU. These algorithms were introduced in Section~\ref{sec:algorithms}. 
+In this section, we compare the performance of different convolution algorithms on a single GPU. These algorithms were introduced in Section~\ref{sec:algorithms}.
+We used Cuda-convnet for \textsf{Direct}, and cuDNN for \textsf{GEMM}, \textsf{FFT}, and \textsf{Winograd}.
 
 \subsection{Execution Time of Convolution Algorithms}
 Figure~\ref{fig_conv_time} shows execution time comparisons between different convolution algorithms (\textsf{GEMM}, \textsf{Direct}, \textsf{FFT}, and \textsf{Winograd}) on a single GPU. We vary the batch size from 32 to 256. Since the convolution layers take most of the execution time in a CNN, using an efficient convolution algorithm is an important design decision. All comparisons are done with the AlexNet model built by Torch7 because it is the only framework that officially supports the newest versions of cuDNN and cuda-convnet3. Randomly generated images are used for the input to remove the effect of I/O latency. The forward and backward computation times are measured and averaged for 100 iterations (\textit{i.e.}, batches). 
