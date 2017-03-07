@@ -121,15 +121,7 @@ softmax       &              & 1000             &        &      \\
 Grey boxes in Figure~\ref{fig_Alex} represent kernels and weights of fully connected layers (\textit{i.e.}, network parameters) and white boxes represent the data produced by the layers. The input to \textsf{conv1} is the input image. The result of a previous convolution layer becomes the input to the next convolution layer after going through a max-pooling layer if there is any. At the beginning, 96 $3 \times 11 \times 11$ 3D kernels are applied to the RGB channels of the input image. This is equivalent to applying 96 $11 \times 11$ 2D kernels to each input image channel. 
 
 The fully connected layers combine the features extracted by the previous convolution layers and creating a conclusion. The output of \textsf{conv5} after \textsf{pool3} becomes the input neurons of \textsf{fc1}. For a given image, AlexNet determines which image class the input belongs to among 1000 predefined image classes. The last layer, \textsf{softmax} layer, in AlexNet normalizes the output values of \textsf{fc3} and converts them to probability values. The \textsf{fc3} and \textsf{softmax} layers have 1000 output neurons, respectively, each of which corresponds to one of the image classes. The probability value of each \textsf{softmax} neuron represents the confidence level that the input image belongs to the associated class with the neuron.
-
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\linewidth]{./figures/convolution}
-  \caption{Convolution and max-pooling in the dotted box in Figure~\ref{fig_Alex}.}
-  \label{fig_convolution}
-\end{figure}
-
-The dotted box in Figure~\ref{fig_Alex} (\textsf{conv2}+\textsf{pool2}) is detailed in Figure~\ref{fig_convolution}. The 96 feature maps produced by \textsf{conv1}+\textsf{pool1} are convolved by 256 $5 \times 5 \times 96$ 3D kernels and go through $3 \times 3$ max pooling with a stride of two resulting in 256 new feature maps. Since there are 96 inputs, applying a $5 \times 5$ 2D kernel to each of the 96 inputs is equivalent to applying a $5 \times 5 \times 96$ 3D kernel to the 96 inputs. The detailed configuration of the AlexNet model in this paper is presented in Table~\ref{alex_model}.
+The detailed configuration of the AlexNet model in this paper is presented in Table~\ref{alex_model}.
 
 AlexNet has been frequently used for benchmarking deep learning libraries because it is equipped with most of the state-of-the-art DNN components, such as convolution, max-pooling, and dropout\cite{convnet-benchmarks}. The original AlexNet model includes a local response normalization (LRN) layer, but we exclude it in this paper because LRN is very rarely used in current CNNs. 
 
@@ -139,16 +131,9 @@ AlexNet has been frequently used for benchmarking deep learning libraries becaus
 
 {\bf 4D tensor format}. Since multiple 2D feature maps (or images) are typically processed in a layer at a time, the feature map data in a CNN can be treated as four-dimensional tensors $<N, C, H, W>$, where $N$, $C$, $H$, and $W$ are the number of images in a batch, the number of channels (\textit{i.e.}, feature maps), the height of a feature map (or an image), and the width of a feature map (or an image), respectively. Since the 4D tensor data are stored in the order of the dimensions $N$, $C$, $H$, and $W$, they are called $NCHW$ 4D tensors. The computational complexity of convolving a $NCHW$ tensor with $K \times R \times S$ 3D kernel is $O(K \times CRS \times NHW)$.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.9\linewidth]{./figures/direct}
-  \caption{Direct convolution vs. matrix multiplication.}
-  \label{fig_direct}
-\end{figure}
-
 \subsection{Convolution Algorithms}
 \label{sec:algorithms}
-{\bf Direct convolution}. Since the efficiency of computing a convolution is important to CNNs, several methods have been developed to efficiently implement the convolution operation. Directly computing the convolution (we call it \textit{direct convolution} in this paper) using Equation~\ref{2d-conv} is the most straightforward way to perform convolution. Cuda-convnet\cite{cuda-convnet} is a widely used direct convolution library. Figure~\ref{fig_direct} compares matrix multiplication and direct convolution computation.
+{\bf Direct convolution}. Since the efficiency of computing a convolution is important to CNNs, several methods have been developed to efficiently implement the convolution operation. Directly computing the convolution (we call it \textit{direct convolution} in this paper) using Equation~\ref{2d-conv} is the most straightforward way to perform convolution. Cuda-convnet\cite{cuda-convnet} is a widely used direct convolution library.
 
 \begin{figure}[htbp]
   \centering
