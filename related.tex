@@ -150,7 +150,15 @@ Interestingly, the computational complexity of this matrix multiplication method
 
 {\bf Using FFT}. The convolution operation can be implemented using a fast Fourier transform (FFT) algorithm to reduce computational complexity\cite{fftconv}. The complexity of FFT convolution is $O(K \times CWW \times \log W)$ that does not depend on the kernel size, $R \times S$. However, it requires more memory space because filters need to be padded to the dimension of the input. Another restriction is that it can be applied only to convolutions with the stride of one.
 
-{\bf Using the Winograd algorithm}. Winograd convolution is based on GEMM\cite{cublas}. It reduces the complexity using Winograd's minimal filtering algorithm\cite{winograd}. It is similar to the well known Strassen's algorithm\cite{winograd1980arithmetic} for matrix multiplication. It reduces multiplication operations significantly when the kernel size is fixed. Thus, a different kernel size requires a different minimal filtering algorithm. The minimal filtering algorithm for $4 \times 3$ tiled matrix can reduce 12 multiplications to 6. Nesting the minimal filtering algorithm twice would reduce the algorithm complexity by a factor of 4\cite{winograd}. cuDNN 5.1 supports Winograd convolution only for the filter sizes of $3 \times 3$ and $5 \times 5$.
+{\bf Using the Winograd algorithm}.
+Winograd convolution is based on GEMM\cite{cublas}.
+It reduces the complexity using Winograd's minimal filtering algorithm\cite{winograd}.
+It is similar to the well known Strassen's algorithm\cite{winograd1980arithmetic} for matrix multiplication.
+It reduces multiplication operations significantly when the kernel size is fixed.
+Thus, a different kernel size requires a different minimal filtering algorithm.
+The minimal filtering algorithm for $4 \times 4$ tiled matrix can reduce 12 multiplications to 6.
+Nesting the minimal filtering algorithm twice would reduce the algorithm complexity by a factor of 4\cite{winograd}.
+cuDNN 5.1 supports Winograd convolution only for the filter sizes of $3 \times 3$ and $5 \times 5$.
 
 \subsection{Multi-GPU Support}
 \label{sec:multiGPU-parallelism}
